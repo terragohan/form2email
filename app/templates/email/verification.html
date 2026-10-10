@@ -1,0 +1,24 @@
+<div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 34rem; color: #1c2430; line-height: 1.55;">
+  <h2 style="color: #1c2430;">Verify your Form2Email endpoint</h2>
+  <p>Hello,</p>
+  <p>Verify ownership of <strong>{{ destination_email }}</strong> to activate
+  your Form2Email form endpoint for <strong>{{ origin }}</strong>:</p>
+  <p><a href="{{ verify_url }}" style="display: inline-block; padding: 0.65rem 1.4rem; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Verify email address</a></p>
+  <p style="font-size: 0.85em; color: #5b6675;">Or paste this link into your
+  browser: <a href="{{ verify_url }}" style="color: #2563eb; word-break: break-all;">{{ verify_url }}</a></p>
+  {% if public_url and manage_page_url %}
+  <p>Once verified, point your form at this URL:</p>
+  <p style="padding: 0.75rem; background: #f6f7f9; border: 1px solid #e2e6ec; border-radius: 6px; word-break: break-all;"><strong>{{ public_url }}</strong></p>
+  <p>Keep this manage link private — it opens a page where you can check
+  status, extend the endpoint, or resend the verification email:
+  <a href="{{ manage_page_url }}" style="color: #2563eb; word-break: break-all;">{{ manage_page_url }}</a></p>
+  {% endif %}
+  <p style="color: #5b6675;">This verification link expires in {{ ttl_hours }}
+  hours. Once verified, forms on {{ origin }} can post to your endpoint and
+  submissions will be relayed to your inbox for {{ ttl_days }} days.</p>
+  <p style="color: #5b6675;">To make sure our emails always reach you, add
+  <strong>{{ mail_from }}</strong> to your contacts or trusted-senders
+  list.</p>
+  <p style="color: #5b6675;">If you didn't create this endpoint, you can ignore
+  this email — nothing is active until you verify.</p>
+</div>

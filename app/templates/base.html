@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Form2Email{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400..700&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}">
+  <link rel="stylesheet" href="/static/style.css?v={{ static_version }}">
+</head>
+<body>
+  <!-- Decorative email doodles -->
+  <svg class="doodle doodle-envelope" viewBox="0 0 120 92" aria-hidden="true">
+    <rect x="8" y="14" width="104" height="64" rx="7" fill="#ffffff"
+      stroke="#1c2430" stroke-width="5"/>
+    <path d="M11 19 L59 53 L109 17" fill="none" stroke="#1c2430"
+      stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <svg class="doodle doodle-plane" viewBox="0 0 120 100" aria-hidden="true">
+    <path d="M10 56 L110 12 L68 92 L52 62 Z" fill="#dbe7fd"
+      stroke="#1c2430" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M52 62 L108 14" fill="none" stroke="#1c2430" stroke-width="4"
+      stroke-linecap="round"/>
+  </svg>
+  <svg class="doodle doodle-at" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M86 52 a36 36 0 1 0 2 13" fill="none" stroke="#1c2430"
+      stroke-width="6" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="14" fill="#e8eefc" stroke="#1c2430"
+      stroke-width="5"/>
+    <path d="M64 38 v22 c0 9 16 10 19 1" fill="none" stroke="#1c2430"
+      stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <svg class="doodle doodle-envelope-small" viewBox="0 0 120 92" aria-hidden="true">
+    <rect x="8" y="14" width="104" height="64" rx="7" fill="#e8eefc"
+      stroke="#1c2430" stroke-width="5"/>
+    <path d="M11 19 L59 53 L109 17" fill="none" stroke="#1c2430"
+      stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <header class="site-header">
+    <div class="container container-wide nav">
+      <a class="logo" href="/">Form2<span>Email</span></a>
+      <nav aria-label="Main">
+        <a href="/">Create</a>
+        <a href="/how-it-works">How it works</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container{% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container container-wide">
+      <p>Form2Email — form submissions straight to your inbox.
+        <a href="/how-it-works">How it works</a> ·
+        <a href="/for-coding-tools">For coding tools</a></p>
+    </div>
+  </footer>
+</body>
+</html>

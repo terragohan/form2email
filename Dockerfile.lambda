@@ -1,0 +1,16 @@
+# Lambda container image: AWS's Python 3.13 base (includes the Lambda runtime),
+# dependencies pinned by uv.lock and installed into the system Python.
+FROM public.ecr.aws/lambda/python:3.13
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+COPY pyproject.toml uv.lock ./
+RUN pip install --no-cache-dir uv \
+    && uv export --frozen --no-dev -o requirements.txt \
+    && uv pip install --system --no-cache -r requirements.txt \
+    && rm requirements.txt
+
+COPY app ./app
+COPY lambda_handler.py ./
+
+CMD ["lambda_handler.handler"]

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}For coding tools — Form2Email{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1><span class="highlight">For coding tools</span></h1>
+  <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
+    <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
+      fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p>Set up a form without touching this website — paste one prompt into
+    your coding tool and let it do the wiring.</p>
+</div>
+
+<div class="card">
+  <h2>The prompt</h2>
+  <p>Paste this into your agent (Claude Code, Kimi Code, Cursor, …):</p>
+  <pre class="prompt-block">Set up a Form2Email endpoint for this project.
+
+1. Ask me for the destination email address and the domain my form will
+   live on (origin).
+2. Create the endpoint:
+   curl -s -X POST {{ settings.base_url }}/api/endpoints \
+     -H 'content-type: application/json' \
+     -d '{"destination_email": "&lt;destination&gt;", "origin": "&lt;origin&gt;"}'
+3. The response has public_url (form target), manage_url (API), and
+   manage_page_url (human page). All three are secret — store them in my
+   project's config, never in public code.
+4. Tell me to click the verification link in the destination inbox — a
+   human must do this; nothing works until it happens. Also tell me to
+   add {{ settings.mail_from }} as a trusted sender.
+5. Once I confirm verification, wire my form to POST public_url.
+   Submissions are only accepted from the registered origin (exact
+   hostname match; register a subdomain separately if the form lives on
+   one).
+6. Remind me: the endpoint expires {{ settings.default_ttl_days }} days after
+   verification. Extending is free (+{{ settings.default_ttl_days }} days per call) via
+   POST &lt;manage_url&gt;/extend — the manage page has a button.</pre>
+  <p class="note">One thing no tool can do for you: clicking the
+    verification link. The endpoint stays inert until a human does.</p>
+</div>
+
+<div class="card">
+  <h2>What the tool will do</h2>
+  <ol class="steps">
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5 v14 M5 12 h14" fill="none" stroke="#ffffff" stroke-width="2.4"
+          stroke-linecap="round"/>
+      </svg>
+      <h3>Create</h3>
+      <p><code>POST /api/endpoints</code> with your destination address and
+        form domain. Rate-limited to {{ settings.rate_limit_create_per_hour }}/hour per IP.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 12.5 L10 18 L19.5 6.5" fill="none" stroke="#ffffff"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>You verify</h3>
+      <p>A verification link lands in the destination inbox — single-use,
+        24 hours. Add <code>{{ settings.mail_from }}</code> to your trusted
+        senders so it doesn't get filtered.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="#ffffff" stroke-width="2.2"/>
+        <path d="M12 7.5 V12 L15.5 14" fill="none" stroke="#ffffff"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>Wire the form</h3>
+      <p>The tool points your form at <code>public_url</code> — form-encoded
+        or JSON, up to {{ settings.max_submission_body_bytes // 1024 }} KB. Browser posts must come from the
+        registered origin exactly.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 12 a8 8 0 1 1 -2.9 -6.2 M20 3 v5 h-5" fill="none"
+          stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round"/>
+      </svg>
+      <h3>Stay active</h3>
+      <p>{{ settings.default_ttl_days }} days per window, free extensions from the manage page.
+        The tool can also call <code>POST &lt;manage_url&gt;/extend</code>
+        directly.</p>
+    </li>
+  </ol>
+</div>
+
+<div class="card">
+  <h2>Machine-readable</h2>
+  <p>Coding tools can discover the API themselves:</p>
+  <ul>
+    <li><code><a href="/api/info">{{ settings.base_url }}/api/info</a></code> —
+      the whole API as JSON: operations, fields, errors, limits</li>
+    <li><code><a href="/llms.txt">{{ settings.base_url }}/llms.txt</a></code> —
+      this guide as plain text, in the llms.txt convention</li>
+    <li><code><a href="/openapi.json">{{ settings.base_url }}/openapi.json</a></code> —
+      the OpenAPI schema</li>
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Form2Email — signups in your inbox{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1><span class="highlight">Signups</span> in your inbox</h1>
+  <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
+    <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
+      fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p>We give you a public URL — point any HTML form at it and every
+    submission lands in your email.</p>
+</div>
+
+<div class="card" id="setup">
+  <form id="setup-form">
+    <label for="destination_email">Where should signups be sent?</label>
+    <input id="destination_email" name="destination_email" type="email"
+      placeholder="you@example.com" required>
+    <label for="origin">What domain will your form live on?</label>
+    <input id="origin" name="origin" placeholder="yoursite.com" required>
+    <span class="hint">A bare domain (yoursite.com) or an origin
+      (https://yoursite.com). Submissions are only accepted from exactly
+      this domain — register a subdomain explicitly if your form lives on
+      one.</span>
+    <button type="submit" id="submit-button">Create my form URL</button>
+  </form>
+</div>
+<p id="error" class="alert-error" role="alert" hidden></p>
+
+<script>
+(() => {
+  const form = document.getElementById("setup-form");
+  const button = document.getElementById("submit-button");
+  const errorBox = document.getElementById("error");
+  const setup = document.getElementById("setup");
+
+  const textElement = (tag, text, className) => {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text;
+    return el;
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    errorBox.hidden = true;
+    button.disabled = true;
+    button.textContent = "Creating…";
+
+    fetch("/api/endpoints", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        destination_email: form.elements.destination_email.value.trim(),
+        origin: form.elements.origin.value.trim(),
+      }),
+    })
+      .then((response) =>
+        response.json().catch(() => ({})).then((body) => {
+          if (!response.ok) {
+            throw new Error(
+              typeof body.detail === "string"
+                ? body.detail
+                : "Please check the email address and domain you entered."
+            );
+          }
+          return body;
+        })
+      )
+      .then((result) => {
+        setup.replaceChildren();
+
+        setup.appendChild(textElement("h2", "Your form URL is ready"));
+        setup.appendChild(textElement("p", "Point your form at this URL:"));
+        setup.appendChild(textElement("p", result.public_url, "public-url"));
+
+        const copyButton = document.createElement("button");
+        copyButton.type = "button";
+        copyButton.className = "secondary";
+        copyButton.textContent = "Copy URL";
+        copyButton.addEventListener("click", () => {
+          navigator.clipboard.writeText(result.public_url).then(
+            () => { copyButton.textContent = "Copied"; },
+            () => { copyButton.textContent = "Select and copy the URL above"; }
+          );
+        });
+        setup.appendChild(copyButton);
+
+        setup.appendChild(textElement(
+          "p",
+          "A verification email is on its way to " + result.destination_email +
+          ". Your form URL only starts accepting submissions once you click the link in that email.",
+          "note"
+        ));
+        setup.appendChild(textElement(
+          "p",
+          "Add {{ mail_from }} to your contacts or trusted-senders list so our " +
+          "verification and submission emails don't get filtered.",
+          "note"
+        ));
+        setup.appendChild(textElement(
+          "p",
+          "Once verified, the endpoint stays active for 7 days. You can extend it" +
+          " — another 7 days each time — from your manage page. Permanent endpoints" +
+          " that never expire are granted by the operator on request.",
+          "note"
+        ));
+
+        const manage = document.createElement("p");
+        manage.className = "note";
+        manage.appendChild(document.createTextNode("Keep this link private — "));
+        const manageLink = document.createElement("a");
+        manageLink.href = result.manage_page_url;
+        manageLink.textContent = "open your manage page";
+        manage.appendChild(manageLink);
+        manage.appendChild(document.createTextNode(
+          " to check status, extend the endpoint, or resend the verification email."
+        ));
+        setup.appendChild(manage);
+
+        const again = document.createElement("p");
+        const againLink = document.createElement("a");
+        againLink.href = "/";
+        againLink.textContent = "Create another endpoint";
+        again.appendChild(againLink);
+        setup.appendChild(again);
+      })
+      .catch((err) => {
+        errorBox.textContent = (err && err.message) || "Something went wrong — please try again.";
+        errorBox.hidden = false;
+        button.disabled = false;
+        button.textContent = "Create my form URL";
+      });
+  });
+})();
+</script>
+{% endblock %}

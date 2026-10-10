@@ -1,0 +1,73 @@
+# Form2Email
+
+> Turn any HTML form into an email. Create an endpoint with a destination
+> address and the domain your form lives on, verify the address by clicking
+> the link we send, then point your form at the public URL — every
+> submission lands in the destination inbox. No accounts, no dashboards.
+
+## For coding tools
+
+Paste this into your agent to set up a form end to end:
+
+    Set up a Form2Email endpoint for this project.
+
+    1. Ask me for the destination email address and the domain my form
+       will live on (origin).
+    2. Create the endpoint:
+       curl -s -X POST {{ settings.base_url }}/api/endpoints \
+         -H 'content-type: application/json' \
+         -d '{"destination_email": "<destination>", "origin": "<origin>"}'
+    3. The response has public_url (form target), manage_url (API), and
+       manage_page_url (human page). All three are secret — store them in
+       my project's config, never in public code.
+    4. Tell me to click the verification link in the destination inbox —
+       a human must do this; nothing works until it happens. Also tell me
+       to add {{ settings.mail_from }} as a trusted sender.
+    5. Once I confirm verification, wire my form to POST public_url.
+       Submissions are only accepted from the registered origin (exact
+       hostname match; register a subdomain separately if the form lives
+       on one). Browser posts send an Origin header automatically.
+    6. Remind me: the endpoint expires {{ settings.default_ttl_days }} days
+       after verification. Extending is free (+{{ settings.default_ttl_days }} days
+       per call) via POST <manage_url>/extend — the manage page has a button.
+
+## API reference
+
+- POST {{ settings.base_url }}/api/endpoints — JSON body
+  {"destination_email": "you@example.com", "origin": "yoursite.com"}.
+  origin accepts a bare domain or http(s):// origin; anything with a path,
+  query, or non-http scheme is rejected. Returns 201 with public_url,
+  manage_url, manage_page_url.
+- GET <manage_url> — status: verified, active, permanent, expires_at,
+  days_remaining.
+- POST <manage_url>/extend — +{{ settings.default_ttl_days }} days, free; revives expired
+  endpoints.
+- POST <manage_url>/verification — resend the verification email (rotates
+  the token; the old link dies).
+- POST <public_url> — a submission. Form-encoded or JSON. Fields name,
+  email, subject, message are mapped into the relay (email becomes
+  Reply-To); all other fields are listed as additional fields. Optional
+  _redirect field: browser submitters get a 303 there. Requests with no
+  Origin/Referer headers (curl, server-to-server) are accepted; browser
+  posts must match the registered origin exactly.
+
+## Limits and errors
+
+- Body cap {{ settings.max_submission_body_bytes }} bytes (413); field caps: message 20000,
+  subject 500, email 320, name 200, up to 20 extra fields of 1000 chars
+  each (422 on violation).
+- Rate limits: {{ settings.rate_limit_create_per_hour }} endpoint creates/IP/hour,
+  {{ settings.rate_limit_submit_per_minute }} submissions/IP/minute (then exponential backoff up to
+  {{ settings.rate_limit_submit_backoff_max_seconds | int }}s), {{ settings.rate_limit_verification_per_email_per_day }} verification
+  emails per address per day.
+- 403 unverified or wrong origin · 410 expired · 413 too large ·
+  422 field cap · 429 rate limited · 502 mail provider failed (submission
+  still stored).
+- Endpoints are temporary: {{ settings.default_ttl_days }} days from verification, free
+  extensions, permanent endpoints granted by the operator on request.
+
+## Machine-readable
+
+- {{ settings.base_url }}/api/info — this API described as JSON
+- {{ settings.base_url }}/openapi.json — OpenAPI schema
+- {{ settings.base_url }}/for-coding-tools — the prompt guide as a page
