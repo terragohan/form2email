@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Manage endpoint — Form2Email{% endblock %}
+{% block content %}
+{% if found %}
+<div class="card" id="status-card">
+  <h2>Endpoint status</h2>
+  <p class="status-line">
+    {% if status.permanent %}
+    <span class="badge badge-permanent" id="status-badge">Permanent</span>
+    {% elif not status.verified %}
+    <span class="badge badge-warn" id="status-badge">Pending verification</span>
+    {% elif status.active %}
+    <span class="badge badge-success" id="status-badge">Active</span>
+    {% else %}
+    <span class="badge badge-error" id="status-badge">Expired</span>
+    {% endif %}
+  </p>
+  <dl class="details">
+    <dt>Sends to</dt>
+    <dd>{{ status.destination_email }}</dd>
+    <dt>Origin</dt>
+    <dd>{{ status.origin }}</dd>
+    <dt>Expires</dt>
+    <dd id="expiry">
+      {% if status.permanent %}Never — this endpoint is permanent
+      {% elif not status.verified %}After you verify the email address
+      {% elif status.expires_at %}{{ status.expires_at.strftime("%Y-%m-%d %H:%M UTC") }}
+        {% if status.days_remaining is not none %}({{ "%.1f"|format(status.days_remaining) }} days left){% endif %}
+      {% else %}—{% endif %}
+    </dd>
+  </dl>
+  <div class="actions">
+    {% if not status.permanent and status.verified %}
+    <button type="button" id="extend-button">Extend 7 days</button>
+    {% endif %}
+    {% if not status.verified %}
+    <button type="button" class="secondary" id="resend-button">Resend verification email</button>
+    {% endif %}
+    <button type="button" class="secondary" id="refresh-button">Refresh</button>
+  </div>
+  <p class="note">Your public form URL is in the verification email and on the
+    creation success screen — it can't be recovered from this page.</p>
+  <p id="message" class="note" role="status" hidden></p>
+  <p id="error" class="alert-error" role="alert" hidden></p>
+</div>
+
+<script>
+(() => {
+  const manageToken = {{ manage_token | tojson }};
+  const apiUrl = "/api/endpoints/" + manageToken;
+  const badge = document.getElementById("status-badge");
+  const expiry = document.getElementById("expiry");
+  const extendButton = document.getElementById("extend-button");
+  const resendButton = document.getElementById("resend-button");
+  const refreshButton = document.getElementById("refresh-button");
+  const messageBox = document.getElementById("message");
+  const errorBox = document.getElementById("error");
+
+  const showError = (text) => {
+    errorBox.textContent = text;
+    errorBox.hidden = false;
+    messageBox.hidden = true;
+  };
+
+  const showMessage = (text) => {
+    messageBox.textContent = text;
+    messageBox.hidden = false;
+    errorBox.hidden = true;
+  };
+
+  const renderStatus = (status) => {
+    let badgeText, badgeClass;
+    if (status.permanent) {
+      badgeText = "Permanent";
+      badgeClass = "badge badge-permanent";
+    } else if (!status.verified) {
+      badgeText = "Pending verification";
+      badgeClass = "badge badge-warn";
+    } else if (status.active) {
+      badgeText = "Active";
+      badgeClass = "badge badge-success";
+    } else {
+      badgeText = "Expired";
+      badgeClass = "badge badge-error";
+    }
+    badge.textContent = badgeText;
+    badge.className = badgeClass;
+
+    if (status.permanent) {
+      expiry.textContent = "Never — this endpoint is permanent";
+    } else if (!status.verified) {
+      expiry.textContent = "After you verify the email address";
+    } else if (status.expires_at) {
+      const when = new Date(status.expires_at);
+      const formatted = when.toISOString().slice(0, 16).replace("T", " ") + " UTC";
+      const days = status.days_remaining !== null
+        ? " (" + status.days_remaining.toFixed(1) + " days left)"
+        : "";
+      expiry.textContent = formatted + days;
+    } else {
+      expiry.textContent = "—";
+    }
+
+    if (extendButton) {
+      extendButton.hidden = status.permanent || !status.verified;
+    }
+    if (resendButton) {
+      resendButton.hidden = status.verified;
+    }
+  };
+
+  const callApi = (url, options, onStatus, onDone) => {
+    errorBox.hidden = true;
+    messageBox.hidden = true;
+    fetch(url, options)
+      .then((response) =>
+        response.json().catch(() => ({})).then((body) => {
+          if (!response.ok) {
+            throw new Error(
+              typeof body.detail === "string"
+                ? body.detail
+                : "Something went wrong — please try again."
+            );
+          }
+          return body;
+        })
+      )
+      .then(onStatus)
+      .catch((err) => showError((err && err.message) || "Something went wrong."))
+      .then(() => { if (onDone) onDone(); });
+  };
+
+  const refresh = () => callApi(apiUrl, {}, (status) => {
+    renderStatus(status);
+    showMessage("Status refreshed.");
+  });
+
+  if (extendButton) {
+    extendButton.addEventListener("click", () => {
+      extendButton.disabled = true;
+      callApi(
+        apiUrl + "/extend",
+        { method: "POST" },
+        (status) => {
+          renderStatus(status);
+          showMessage("Extended — the endpoint now expires 7 days later.");
+        },
+        () => { extendButton.disabled = false; }
+      );
+    });
+  }
+
+  if (resendButton) {
+    resendButton.addEventListener("click", () => {
+      resendButton.disabled = true;
+      callApi(
+        apiUrl + "/verification",
+        { method: "POST" },
+        () => showMessage("Verification email sent — check your inbox."),
+        () => { resendButton.disabled = false; }
+      );
+    });
+  }
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", refresh);
+  }
+})();
+</script>
+{% else %}
+<div class="card">
+  <h2>Endpoint not found</h2>
+  <p>This manage link is invalid. Manage links can't be recovered — the raw
+    token exists only in the URL you were given when the endpoint was
+    created. Check the link in your verification email.</p>
+  <p><a class="button secondary" href="/">Create a new endpoint</a></p>
+</div>
+{% endif %}
+{% endblock %}

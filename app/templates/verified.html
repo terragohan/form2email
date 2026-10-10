@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Endpoint verified — Form2Email{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Email verified</h2>
+  <p class="status-line">
+    {% if is_permanent %}
+    <span class="badge badge-permanent">Permanent — never expires</span>
+    {% else %}
+    <span class="badge badge-success">Active</span>
+    {% endif %}
+  </p>
+  {% if is_permanent %}
+  <p>Your Form2Email endpoint is now active permanently — it never expires.</p>
+  {% else %}
+  <p>Your Form2Email endpoint is now active{% if expires_at %} until
+    <strong>{{ expires_at.strftime("%Y-%m-%d %H:%M UTC") }}</strong>{% endif %}.
+    You can extend it — 7 more days each time — from your manage page.</p>
+  {% endif %}
+  <p>Use the public form URL you received when you created the endpoint — it
+    now accepts submissions.</p>
+  <p><a class="button secondary" href="/">Back to Form2Email</a></p>
+</div>
+{% endblock %}

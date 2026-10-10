@@ -1,0 +1,23 @@
+<div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 38rem; color: #1c2430; line-height: 1.55;">
+  <h2 style="color: #1c2430;">New form submission</h2>
+  <p>
+    <strong>Name:</strong> {{ sender_name or "—" }}<br>
+    <strong>Email:</strong> {{ sender_email or "—" }}
+  </p>
+  {% if subject %}<p><strong>Subject:</strong> {{ subject }}</p>{% endif %}
+  <p><strong>Message:</strong></p>
+  <div style="white-space: pre-wrap; padding: 0.75rem; background: #f6f7f9; border: 1px solid #e2e6ec; border-radius: 6px;">{{ message or "—" }}</div>
+  {% if extra_fields %}
+  <h3 style="color: #1c2430;">Additional fields</h3>
+  <ul>
+    {% for key, value in extra_fields.items() %}
+    <li><strong>{{ key }}:</strong> {{ value }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <hr style="border: none; border-top: 1px solid #e2e6ec; margin: 1.5rem 0;">
+  <p style="color: #5b6675; font-size: 0.85em;">Relayed by Form2Email from a
+  form on {{ origin }}. Reply to this email to respond directly to the
+  sender. Add <strong>{{ mail_from }}</strong> to your trusted-senders list so
+  these emails always reach your inbox.</p>
+</div>

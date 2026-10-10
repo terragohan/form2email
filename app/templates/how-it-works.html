@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}How it works — Form2Email{% endblock %}
+{% block main_class %} container-wide{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1><span class="highlight">How it works</span></h1>
+  <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
+    <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
+      fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p>Form2Email turns any HTML form into an email — no accounts, no
+    dashboards, no code on your site.</p>
+</div>
+
+<div class="card">
+  <h2>The lifecycle of an endpoint</h2>
+  <ol class="steps">
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5 v14 M5 12 h14" fill="none" stroke="#ffffff" stroke-width="2.4"
+          stroke-linecap="round"/>
+      </svg>
+      <h3>Create</h3>
+      <p>Tell us the email address that should receive submissions and the
+        domain your form lives on. We give you a public form URL.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 12.5 L10 18 L19.5 6.5" fill="none" stroke="#ffffff"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>Verify</h3>
+      <p>We email a verification link to the destination address. Nothing is
+        accepted until you click it — the link is single-use and expires after
+        24 hours.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="#ffffff" stroke-width="2.2"/>
+        <path d="M12 7.5 V12 L15.5 14" fill="none" stroke="#ffffff"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>Active — 7-day temporary window</h3>
+      <p>Once verified, the endpoint accepts submissions for 7 days. Every
+        submission is relayed to your inbox.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 12 a8 8 0 1 1 -2.9 -6.2 M20 3 v5 h-5" fill="none"
+          stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round"/>
+      </svg>
+      <h3>Extend for free</h3>
+      <p>From your manage page you can extend the endpoint by another 7 days,
+        as many times as you like. Extending also revives an endpoint that has
+        already expired.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.5 4.5 h9 L13.5 12 l3 7.5 h-9 L10.5 12 z" fill="none"
+          stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
+      </svg>
+      <h3>Expiry</h3>
+      <p>If the window runs out, the endpoint stops accepting submissions and
+        responds with HTTP 410 until you extend it.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12 C 5 9.8, 6.8 8.7, 8.4 8.7 C 11 8.7, 13 15.3, 15.6 15.3
+          C 17.2 15.3, 19 14.2, 19 12 C 19 9.8, 17.2 8.7, 15.6 8.7
+          C 13 8.7, 11 15.3, 8.4 15.3 C 6.8 15.3, 5 14.2, 5 12 Z" fill="none"
+          stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
+      </svg>
+      <h3>Permanent endpoints</h3>
+      <p>Endpoints that should never expire are granted permanence by the
+        operator. A permanent endpoint stays active indefinitely.</p>
+    </li>
+  </ol>
+</div>
+
+<div class="card">
+  <h2>Getting our emails</h2>
+  <p>Verification and submission emails come from
+    <strong>{{ mail_from }}</strong>. Add that address to your contacts or
+    trusted-senders list so it doesn't get filtered into spam.</p>
+</div>
+
+<div class="compare">
+  <div class="card">
+    <h3>Temporary (default)</h3>
+    <ul>
+      <li>Active for 7 days after verification</li>
+      <li>Free 7-day extensions, any number of times</li>
+      <li>Extending an expired endpoint revives it</li>
+      <li>Answers HTTP 410 while expired</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Permanent</h3>
+    <ul>
+      <li>Never expires</li>
+      <li>Granted by the operator on request</li>
+      <li>No extensions needed — the extend action does not apply</li>
+      <li>Can be revoked by the operator, returning to a 7-day window</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Security model</h2>
+  <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 760 250" role="img"
+      aria-label="Submission flow: a form post from your registered domain passes the origin check and is relayed to your inbox with the visitor as reply-to; a post from any other domain is rejected with 403.">
+      <rect class="d-box" x="10" y="30" width="170" height="60" rx="10" fill="#ffffff"/>
+      <text class="d-title" x="95" y="56" text-anchor="middle">yoursite.com</text>
+      <text class="d-caption" x="95" y="76" text-anchor="middle">your form</text>
+
+      <rect class="d-box" x="10" y="160" width="170" height="60" rx="10" fill="#fbdddd"/>
+      <text class="d-title" x="95" y="186" text-anchor="middle">evil-site.com</text>
+      <text class="d-caption" x="95" y="206" text-anchor="middle">copied your form</text>
+
+      <rect class="d-box" x="300" y="90" width="180" height="70" rx="10" fill="#dbe7fd"/>
+      <text class="d-title" x="390" y="119" text-anchor="middle">Form2Email</text>
+      <text class="d-caption" x="390" y="141" text-anchor="middle">checks the Origin</text>
+
+      <rect class="d-box" x="580" y="90" width="170" height="70" rx="10" fill="#d9f2e2"/>
+      <text class="d-title" x="665" y="119" text-anchor="middle">Your inbox</text>
+      <text class="d-caption" x="665" y="141" text-anchor="middle">reply-to: the visitor</text>
+
+      <path class="d-arrow" d="M184 66 C 228 72, 250 92, 285 103.6"/>
+      <path d="M294 106.6 L284.8 99.1 L282.2 107.7 Z" fill="#1c2430"/>
+      <text class="d-edge-label" x="230" y="48" text-anchor="middle">POST + Origin</text>
+      <circle cx="240" cy="84" r="13" fill="#d9f2e2" stroke="#1c2430" stroke-width="3"/>
+      <text class="d-badge-ok" x="240" y="89" text-anchor="middle">&#10003;</text>
+
+      <path class="d-arrow" d="M184 194 C 228 188, 250 162, 285 148.6"/>
+      <path d="M294 145.3 L282.1 144.7 L285.1 153.1 Z" fill="#1c2430"/>
+      <circle cx="240" cy="173" r="13" fill="#fbdddd" stroke="#1c2430" stroke-width="3"/>
+      <text class="d-badge-bad" x="240" y="178" text-anchor="middle">&#10005;</text>
+      <text class="d-edge-label" x="240" y="216" text-anchor="middle">403 rejected</text>
+
+      <path class="d-arrow" d="M486 125 L561 125"/>
+      <path d="M574 125 L561.5 120.5 L561.5 129.5 Z" fill="#1c2430"/>
+      <text class="d-edge-label" x="529" y="112" text-anchor="middle">relayed email</text>
+    </svg>
+  </div>
+  <ul>
+    <li><strong>Only token hashes are stored.</strong> The public, manage and
+      verification tokens you receive exist only in the URLs we hand you — the
+      database keeps SHA-256 hashes, so lost raw tokens are unrecoverable and a
+      database leak doesn't expose them.</li>
+    <li><strong>Origin enforcement.</strong> Submissions are only accepted
+      from exactly the domain you registered — subdomains must be registered
+      separately — checked against the browser's Origin/Referer headers and
+      enforced via CORS.</li>
+    <li><strong>Sender becomes Reply-To.</strong> Submission emails are sent
+      to you with the visitor's address as Reply-To, so answering the email
+      replies directly to them.</li>
+    <li><strong>Rate limits with backoff.</strong> Endpoint creation and form
+      submissions are rate-limited per client IP. Once an IP exceeds the
+      submission cap, every further attempt doubles its lockout — 1s, 2s, 4s,
+      up to 5 minutes — until it slows down.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>Error semantics</h2>
+  <dl class="details">
+    <dt>403</dt>
+    <dd>Forbidden — the email isn't verified yet, or the submission came from
+      a domain other than the registered origin.</dd>
+    <dt>410</dt>
+    <dd>Gone — the endpoint has expired. Extend it from the manage page to
+      revive it.</dd>
+    <dt>429</dt>
+    <dd>Too many requests — you hit a rate limit. Slow down and retry.</dd>
+    <dt>502</dt>
+    <dd>Bad gateway — the submission or verification email couldn't be
+      delivered by the mail provider. Nothing was lost on our side; try again.</dd>
+  </dl>
+</div>
+{% endblock %}
