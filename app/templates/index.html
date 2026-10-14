@@ -1,14 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Form2Email — signups in your inbox{% endblock %}
+{% block title %}Form2Email — Free HTML Form to Email Service | No Backend{% endblock %}
+{% block meta_description %}Send HTML form submissions directly to your email inbox with Form2Email. No backend required. Simple setup for static websites, contact forms, and developers.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Form2Email",
+  "url": "{{ settings.base_url.rstrip('/') }}/",
+  "description": "Form2Email sends HTML form submissions directly to your email inbox — no backend, no account required.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "description": "Currently free. A paid tier for permanent endpoints is planned."
+  },
+  "featureList": [
+    "HTML form submissions delivered to your email inbox",
+    "No account or signup — email verification only",
+    "Works with any static website or plain HTML form",
+    "Form-encoded and JSON submissions",
+    "Reply-To set to the form submitter",
+    "Submissions restricted to your registered domain",
+    "Per-IP rate limiting with exponential backoff"
+  ]
+}
+</script>
+{% endblock %}
 {% block content %}
 <div class="hero">
-  <h1><span class="highlight">Signups</span> in your inbox</h1>
+  <h1>Receive HTML form submissions in your <span class="highlight">inbox</span></h1>
   <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
     <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
       fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
   </svg>
-  <p>We give you a public URL — point any HTML form at it and every
-    submission lands in your email.</p>
+  <p>Form2Email helps developers receive website contact form submissions by
+    email without building or maintaining an email backend.</p>
 </div>
 
 <div class="card" id="setup">
@@ -26,6 +55,147 @@
   </form>
 </div>
 <p id="error" class="alert-error" role="alert" hidden></p>
+
+<div class="card">
+  <h2>What is Form2Email?</h2>
+  <p>Form2Email is a free HTML form to email service. It gives you a public
+    form URL — point any HTML form at it and every submission is delivered to
+    your email inbox. There is no account, no dashboard, and no code to run
+    on your server.</p>
+  <p>It solves a specific problem: a static website is just files, so it
+    cannot receive a form POST, store anything, or send email by itself.
+    Form2Email is that missing piece — a form-to-email API you can use
+    instead of standing up PHP, an SMTP server, or a serverless function.</p>
+  <p>It is built for developers and makers running static websites, landing
+    pages, waitlists, and small business sites who want a contact form
+    without a backend. If you are looking for a Formspree alternative, a
+    FormSubmit alternative, or a Web3Forms alternative without accounts or
+    per-form dashboards, this is the same idea with a temporary-URL twist:
+    endpoints expire unless you extend them.</p>
+  <dl class="details">
+    <dt>Backend?</dt>
+    <dd>None — your form posts straight to your Form2Email URL.</dd>
+    <dt>Account?</dt>
+    <dd>None — you verify the destination email once by clicking a link.</dd>
+    <dt>Cost?</dt>
+    <dd>Free. Endpoints last 7 days; extensions are free and unlimited.</dd>
+    <dt>Your data</dt>
+    <dd>Submissions are stored per endpoint and emailed to you. Form
+      visitors are never emailed, and only hashes of your URL tokens are
+      kept.</dd>
+    <dt>Docs</dt>
+    <dd><a href="/how-it-works">How it works</a>, the
+      <a href="/guides">form guides</a>, and the machine-readable
+      <a href="/api/info">API description</a>.</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h2>Add it to your site</h2>
+  <p>Create an endpoint with the tool above (or the
+    <a href="/api/info">API</a>), click the verification link we email you,
+    then point your form at the public URL you received:</p>
+  <pre class="prompt-block">&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;input name="name" required&gt;
+  &lt;input name="email" type="email" required&gt;
+  &lt;textarea name="message" required&gt;&lt;/textarea&gt;
+  &lt;!-- optional: send browser users onward after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+  &lt;button type="submit"&gt;Send&lt;/button&gt;
+&lt;/form&gt;</pre>
+  <p>The visitor's <code>email</code> becomes the reply-to on the email you
+    receive, and any extra fields are included in the message body. JSON
+    submissions work too. The <a href="/guides">guides</a> walk through
+    complete, real-world examples — contact forms, waitlists, quote requests,
+    and more.</p>
+</div>
+
+<div class="compare">
+  <div class="card">
+    <h3>What you get</h3>
+    <ul>
+      <li>Free form-to-email delivery, no account or signup</li>
+      <li>Works with any HTML form on any static host</li>
+      <li>Form-encoded or JSON submissions</li>
+      <li>Reply-to set to the visitor, so you answer them directly</li>
+      <li>Submissions accepted only from your registered domain</li>
+      <li>Rate limiting with backoff against abusive clients</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Honest limitations</h3>
+    <ul>
+      <li>Endpoints expire 7 days after verification — free extensions,
+        permanence on request</li>
+      <li>File uploads are dropped — ask visitors for links instead</li>
+      <li>64 KB per submission, with per-field length caps</li>
+      <li>No CAPTCHA or honeypot yet — rate limits and origin checks only</li>
+      <li>Only the endpoint owner is emailed; no autoresponders</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card" id="faq">
+  <h2>Frequently asked questions</h2>
+
+  <h3>How do I send an HTML form submission to an email address?</h3>
+  <p>Create a Form2Email endpoint with your destination email and your
+    site's domain, verify the email, then set your form's
+    <code>action</code> to the public URL you receive. Every submission is
+    emailed to you.</p>
+
+  <h3>Can I receive contact form submissions without a backend?</h3>
+  <p>Yes — that is exactly what Form2Email is for. Your site stays static;
+    the form posts to Form2Email, which validates, stores, and relays the
+    submission to your inbox.</p>
+
+  <h3>Is Form2Email free?</h3>
+  <p>Yes. Creating endpoints, receiving submissions, and extending endpoints
+    are all free. A paid tier for permanent endpoints is planned for the
+    future.</p>
+
+  <h3>Do I need an account?</h3>
+  <p>No. There is no signup and no password. You prove ownership of the
+    destination email by clicking a verification link, and you manage the
+    endpoint through a secret URL only you receive.</p>
+
+  <h3>Can I use Form2Email on a static website?</h3>
+  <p>Yes — it is designed for static websites. Any host that can serve an
+    HTML page can use it: the form is plain HTML that posts to your
+    Form2Email URL.</p>
+
+  <h3>How does Form2Email prevent spam?</h3>
+  <p>Submissions are only accepted from the exact domain you register, and
+    clients are rate-limited per IP with exponential backoff. Verification
+    emails to any single address are capped per day. There is no CAPTCHA or
+    honeypot yet — that is on the roadmap.</p>
+
+  <h3>Do Form2Email endpoints expire?</h3>
+  <p>Yes — 7 days after email verification. Extending adds another 7 days,
+    is free, works any number of times, and even revives an expired
+    endpoint. Permanent endpoints that never expire are granted by the
+    operator on request.</p>
+
+  <h3>What happens if a submission fails?</h3>
+  <p>If the email provider cannot deliver, the submission is still stored
+    and the form gets a 502 response so it can retry. Expired endpoints
+    answer 410, unverified ones 403, and abusive clients 429 with a
+    Retry-After header.</p>
+</div>
+
+<div class="card">
+  <h2>Guides: real forms, ready to copy</h2>
+  <p>Each guide is a complete, working HTML example for a form people
+    actually build, wired to Form2Email end to end:</p>
+  <ul>
+    {% for slug, g in guides.items() %}
+    <li><a href="/guides/{{ slug }}">{{ g.name }}</a> — {{ g.summary }}</li>
+    {% endfor %}
+  </ul>
+  <p>More depth: <a href="/how-it-works">how endpoints, verification, and
+    expiry work</a>, or <a href="/for-coding-tools">let a coding tool set it
+    up for you</a>.</p>
+</div>
 
 <script>
 (() => {
@@ -94,7 +264,7 @@
         ));
         setup.appendChild(textElement(
           "p",
-          "Add {{ mail_from }} to your contacts or trusted-senders list so our " +
+          "Add {{ settings.mail_from }} to your contacts or trusted-senders list so our " +
           "verification and submission emails don't get filtered.",
           "note"
         ));

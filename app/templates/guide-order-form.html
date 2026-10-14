@@ -1,0 +1,117 @@
+{% extends "guide-base.html" %}
+{% block heading %}An order form without <span class="highlight">shop software</span>{% endblock %}
+{% block standfirst %}A maker selling a few items, a bakery taking pre-orders,
+  a flyer with an order form — the order details arrive in your inbox and you
+  take it from there.{% endblock %}
+
+{% block about %}
+<p>A full shop system is overkill when you sell three things. If your product
+  list fits in a dropdown, a plain HTML form can collect the order: who wants
+  it, what they want, how many, and where it goes. No cart, no checkout
+  plugin, no monthly fee for software you barely use.</p>
+<p>Form2Email emails you each order as it comes in, with the customer's
+  address set as reply-to. You confirm the order and arrange payment yourself
+  — an invoice, a payment link, or cash on pickup.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;label for="product"&gt;Product&lt;/label&gt;
+  &lt;select id="product" name="product" required&gt;
+    &lt;option value="sourdough-loaf"&gt;Sourdough loaf&lt;/option&gt;
+    &lt;option value="rye-loaf"&gt;Rye loaf&lt;/option&gt;
+    &lt;option value="cinnamon-rolls-4"&gt;Cinnamon rolls (box of 4)&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;label for="quantity"&gt;Quantity&lt;/label&gt;
+  &lt;input id="quantity" name="quantity" type="number" min="1" value="1" required&gt;
+
+  &lt;label for="address"&gt;Delivery address&lt;/label&gt;
+  &lt;textarea id="address" name="address" rows="3" required&gt;&lt;/textarea&gt;
+
+  &lt;label for="notes"&gt;Notes (allergies, pickup time, &hellip;)&lt;/label&gt;
+  &lt;textarea id="notes" name="notes" rows="3"&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: your own "what happens next" page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/order-received"&gt;
+
+  &lt;button type="submit"&gt;Place order&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration. The form works with or without JavaScript,
+  on any host that can serve an HTML page. Style the fields however you like
+  — only the <code>action</code>, <code>method="post"</code>, and the input
+  <code>name</code> attributes matter to Form2Email.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each submission becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the customer's <code>email</code>, so
+    hitting reply confirms the order with them directly.</li>
+  <li><code>name</code> and <code>address</code> appear in the body.</li>
+  <li><code>product</code>, <code>quantity</code>, <code>notes</code>, and any
+    other fields you add are listed as additional fields.</li>
+</ul>
+<p>With <code>_redirect</code> set, the customer's browser is sent to your
+  page after a successful submit — a good place to explain when they'll hear
+  from you and how payment works. Without it they get a small JSON response
+  (Form2Email answers with a 303 redirect when <code>_redirect</code> is
+  present, JSON otherwise).</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Keep the product list short enough for a <code>&lt;select&gt;</code> —
+    a handful of options. If customers need to browse dozens of items, you
+    want a shop, not a form.</li>
+  <li>Confirm every order by replying to the email you receive — reply-to is
+    already set to the customer. Since Form2Email never emails the customer
+    itself, your reply is the only confirmation they get.</li>
+  <li>Point <code>_redirect</code> at a page that explains what happens next:
+    when you confirm, how long delivery takes, how payment works.</li>
+  <li>Make the button say what happens: "Place order", not "Submit".</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and order emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li><strong>No payment processing.</strong> Form2Email emails you the order
+    details and you handle payment separately — an invoice, a payment link, or
+    in person. Never ask for card numbers in the form.</li>
+  <li>Not suited to high-volume catalogs: no stock tracking, no cart, no
+    order numbers beyond what you write yourself. If orders outgrow your
+    inbox, it's time for real shop software.</li>
+  <li>An order form is always-on, so remember the endpoint expires
+    {{ settings.default_ttl_days }} days after verification — extend it for
+    free from your manage page (extending also revives an expired endpoint),
+    or ask the operator for a permanent endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your site answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>No file attachments — file inputs are dropped. If customers need to
+    send a reference photo, ask for a link instead.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/quote-request-form">Quote request form</a> — when the
+    price depends on the job instead of a fixed product list.</li>
+  <li><a href="/guides/contact-form">Contact form</a> — the same pattern
+    reduced to name, email, and message.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

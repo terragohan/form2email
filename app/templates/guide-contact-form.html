@@ -1,0 +1,93 @@
+{% extends "guide-base.html" %}
+{% block heading %}A contact form that <span class="highlight">emails you</span>{% endblock %}
+{% block standfirst %}The classic name / email / message form — on your contact
+  page or in your footer — with every message delivered to your inbox.{% endblock %}
+
+{% block about %}
+<p>Every website needs a way for visitors to get in touch, and a contact form
+  beats publishing your email address: no spam harvesters scraping it, no
+  mailto: awkwardness, and the message arrives with the sender's address
+  already set as reply-to.</p>
+<p>If your site is static — plain HTML on any host — it can't receive the
+  form POST itself. Form2Email receives it and emails you the message. There
+  is no PHP, no server code, and no account to create.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;label for="message"&gt;Message&lt;/label&gt;
+  &lt;textarea id="message" name="message" rows="6" required&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Send message&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration. The form works with or without JavaScript,
+  on any host that can serve an HTML page. Style the fields however you like
+  — only the <code>action</code>, <code>method="post"</code>, and the input
+  <code>name</code> attributes matter to Form2Email.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each submission becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the visitor's <code>email</code>, so
+    hitting reply answers them directly.</li>
+  <li><code>name</code> and <code>message</code> appear in the body.</li>
+  <li>Any other fields you add (a <code>subject</code>, a phone number,
+    anything) are listed as additional fields.</li>
+</ul>
+<p>With <code>_redirect</code> set, the visitor's browser is sent to your
+  thank-you page after a successful submit. Without it they get a small JSON
+  response — fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Keep it to three fields. Name, email, and message are enough — every
+    extra field costs you messages.</li>
+  <li>Make the button say what happens: "Send message", not "Submit".</li>
+  <li>Use the <code>_redirect</code> field so visitors land on a real
+    thank-you page instead of a JSON response.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and submission emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>A contact form is always-on, so remember the endpoint expires
+    {{ settings.default_ttl_days }} days after verification — extend it for
+    free from your manage page, or ask the operator for a permanent
+    endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your site answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>No file attachments — file inputs are dropped. Ask for a link
+    instead.</li>
+  <li>Spam protection is origin checks plus per-IP rate limits with
+    backoff; there is no CAPTCHA or honeypot yet.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/waitlist-form">Waitlist form</a> — the same pattern
+    reduced to a single email field.</li>
+  <li><a href="/guides/support-request-form">Support request form</a> —
+    when messages need order numbers and categories.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

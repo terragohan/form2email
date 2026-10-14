@@ -1,0 +1,94 @@
+{% extends "guide-base.html" %}
+{% block heading %}A waitlist form that <span class="highlight">emails you</span> every signup{% endblock %}
+{% block standfirst %}One email field on your coming-soon page — each signup
+  lands in your inbox, so you can launch to a list instead of to silence.{% endblock %}
+
+{% block about %}
+<p>Before your product ships, the landing page has one job: collect the email
+  addresses of people who want to hear "we're live". A waitlist form is a
+  contact form reduced to its minimum — usually a single email input and a
+  button — because every extra field loses signups.</p>
+<p>A coming-soon page is often a static HTML file on any host, which can't
+  receive the form POST itself. Form2Email receives each signup and emails it
+  to you. There is no list software to run and no account to create.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name &lt;small&gt;(optional)&lt;/small&gt;&lt;/label&gt;
+  &lt;input id="name" name="name" autocomplete="name"&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" autocomplete="email" required&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Join the waitlist&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration. Drop the name field if you want the
+  email-only version — only the <code>action</code>,
+  <code>method="post"</code>, and the input <code>name</code> attributes
+  matter to Form2Email; styling is entirely up to you.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each signup becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the visitor's <code>email</code>, so you
+    can answer a signup directly.</li>
+  <li><code>email</code> and the optional <code>name</code> appear in the
+    body; any other fields you add are listed as additional fields.</li>
+  <li>Entries are also stored per endpoint, so a lost email isn't a lost
+    signup — but there is no list export or newsletter-sending feature.</li>
+</ul>
+<p>With <code>_redirect</code> set, the visitor's browser is sent to your
+  thank-you page after a successful submit. Without it they get a small JSON
+  response — fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Email-only, above the fold, converts best. Add the name field only if
+    you will actually use it in launch emails.</li>
+  <li>Make the button say what happens: "Join the waitlist", not
+    "Submit".</li>
+  <li>Use the <code>_redirect</code> field so new signups land on a real
+    thank-you page — a good place to ask them to share the page.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and signup emails don't land in spam.</li>
+  <li>Send the launch announcement from your own mail account — Form2Email
+    delivers signups to you, it doesn't email your visitors.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>A waitlist typically runs for weeks or months, but the endpoint expires
+    {{ settings.default_ttl_days }} days after verification — extend it for
+    free from your manage page as often as you like (extending also revives an
+    expired endpoint), or ask the operator for a permanent endpoint.</li>
+  <li>There is no double opt-in or confirmation email to the visitor —
+    Form2Email only ever emails you, the endpoint owner.</li>
+  <li>Submissions are accepted only from the exact domain you registered. If
+    your landing page answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served from
+    (or create one endpoint per hostname).</li>
+  <li>Spam protection is origin checks plus per-IP rate limits with backoff;
+    there is no CAPTCHA or honeypot yet.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/newsletter-signup">Newsletter signup</a> — the same
+    single-field form on an already-live site.</li>
+  <li><a href="/guides/contact-form">Contact form</a> — when visitors need to
+    write you a message, not just leave an address.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

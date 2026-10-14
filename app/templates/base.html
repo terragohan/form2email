@@ -4,6 +4,22 @@
   <meta charset="utf-8">
   <title>{% block title %}Form2Email{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{% block meta_description %}Form2Email sends HTML form submissions straight to your email inbox — no backend, no account needed.{% endblock %}">
+  {% block robots_meta %}{% endblock %}
+  {% if canonical_path %}
+  <link rel="canonical" href="{{ settings.base_url.rstrip('/') }}{{ canonical_path }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Form2Email">
+  <meta property="og:title" content="{{ self.title() | trim }}">
+  <meta property="og:description" content="{{ self.meta_description() | trim }}">
+  <meta property="og:url" content="{{ settings.base_url.rstrip('/') }}{{ canonical_path }}">
+  <meta property="og:image" content="{{ settings.base_url.rstrip('/') }}/static/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.title() | trim }}">
+  <meta name="twitter:description" content="{{ self.meta_description() | trim }}">
+  <meta name="twitter:image" content="{{ settings.base_url.rstrip('/') }}/static/og-image.png">
+  {% endif %}
+  {% block jsonld %}{% endblock %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400..700&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet">
@@ -45,6 +61,8 @@
       <nav aria-label="Main">
         <a href="/">Create</a>
         <a href="/how-it-works">How it works</a>
+        <a href="/guides">Guides</a>
+        <a href="/#faq">FAQ</a>
       </nav>
     </div>
   </header>
@@ -55,9 +73,12 @@
 
   <footer class="site-footer">
     <div class="container container-wide">
-      <p>Form2Email — form submissions straight to your inbox.
-        <a href="/how-it-works">How it works</a> ·
-        <a href="/for-coding-tools">For coding tools</a></p>
+      <p>Form2Email — form submissions straight to your inbox.</p>
+      <p><a href="/how-it-works">How it works</a> ·
+        <a href="/guides">Form guides</a> ·
+        <a href="/#faq">FAQ</a> ·
+        <a href="/for-coding-tools">For coding tools</a> ·
+        <a href="/api/info">API info</a></p>
     </div>
   </footer>
 </body>

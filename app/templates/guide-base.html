@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ guide.title }}{% endblock %}
+{% block meta_description %}{{ guide.description }}{% endblock %}
+{% block main_class %} container-wide{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Form2Email", "item": "{{ settings.base_url.rstrip('/') }}/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "{{ settings.base_url.rstrip('/') }}/guides"},
+    {"@type": "ListItem", "position": 3, "name": "{{ guide.name }}", "item": "{{ settings.base_url.rstrip('/') }}/guides/{{ guide.slug }}"}
+  ]
+}
+</script>
+{% endblock %}
+{% block content %}
+<nav aria-label="Breadcrumb" class="breadcrumb">
+  <a href="/">Form2Email</a> <span aria-hidden="true">/</span>
+  <a href="/guides">Guides</a> <span aria-hidden="true">/</span>
+  {{ guide.name }}
+</nav>
+
+<div class="hero">
+  <h1>{% block heading %}{{ guide.name }}{% endblock %}</h1>
+  <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
+    <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
+      fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p>{% block standfirst %}{% endblock %}</p>
+</div>
+
+<div class="card">
+  <h2>When you want this form</h2>
+  {% block about %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>The form</h2>
+  <p>Paste this into your page and replace <code>your-token</code> with the
+    token from your endpoint (setup below):</p>
+  <pre class="prompt-block">{% block example %}{% endblock %}</pre>
+  {% block example_notes %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>Set it up</h2>
+  <ol class="steps">
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5 v14 M5 12 h14" fill="none" stroke="#ffffff" stroke-width="2.4"
+          stroke-linecap="round"/>
+      </svg>
+      <h3>Create the endpoint</h3>
+      <p>Use the tool on the <a href="/">homepage</a> — or
+        <code>POST {{ settings.base_url.rstrip('/') }}/api/endpoints</code> —
+        with the email that receives submissions and the exact domain this
+        form lives on.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 12.5 L10 18 L19.5 6.5" fill="none" stroke="#ffffff"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>Verify the email</h3>
+      <p>We send a verification link to the destination address — single-use,
+        valid 24 hours. Nothing is accepted until a human clicks it. Add
+        <code>{{ settings.mail_from }}</code> to your trusted senders.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="#ffffff" stroke-width="2.2"/>
+        <path d="M12 7.5 V12 L15.5 14" fill="none" stroke="#ffffff"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>Point the form at it</h3>
+      <p>Put your public URL in the form's <code>action</code>. Submissions
+        are only accepted from the domain you registered — exact hostname
+        match, subdomains need their own endpoint.</p>
+    </li>
+    <li>
+      <svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 12 a8 8 0 1 1 -2.9 -6.2 M20 3 v5 h-5" fill="none"
+          stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round"/>
+      </svg>
+      <h3>Keep it alive</h3>
+      <p>Endpoints stay active for {{ settings.default_ttl_days }} days after
+        verification. Extend for free (+{{ settings.default_ttl_days }} days,
+        as often as you like) from your manage page — extending also revives
+        an expired endpoint.</p>
+    </li>
+  </ol>
+  {% block setup_notes %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>What lands in your inbox</h2>
+  {% block mapping %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>Tips</h2>
+  {% block tips %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>Limitations</h2>
+  {% block limitations %}{% endblock %}
+</div>
+
+<div class="card">
+  <h2>Keep reading</h2>
+  {% block related %}{% endblock %}
+</div>
+{% endblock %}

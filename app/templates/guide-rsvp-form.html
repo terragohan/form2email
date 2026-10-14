@@ -1,0 +1,122 @@
+{% extends "guide-base.html" %}
+{% block heading %}An RSVP form that <span class="highlight">emails you every reply</span>{% endblock %}
+{% block standfirst %}Attendance, guest counts, and meal choices for your
+  workshop, meetup, wedding, or community event — each RSVP delivered to your
+  inbox as it arrives.{% endblock %}
+
+{% block about %}
+<p>Event pages need an answer to one question: who's coming? Whether it's a
+  workshop with twelve seats, a meetup that needs a headcount for pizza, or a
+  wedding collecting meal choices, the replies all look the same — a name, a
+  yes or no, and a few details.</p>
+<p>If your event page is static HTML, it can't receive the form POST itself.
+  Form2Email receives it and emails you each RSVP, so the headcount builds up
+  in your inbox without a spreadsheet, a database, or an account to
+  create.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;fieldset&gt;
+    &lt;legend&gt;Will you be attending?&lt;/legend&gt;
+    &lt;label&gt;&lt;input type="radio" name="attending" value="yes" required&gt; Yes, I'll be there&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="attending" value="no"&gt; Sorry, can't make it&lt;/label&gt;
+  &lt;/fieldset&gt;
+
+  &lt;label for="guests"&gt;Number of guests (including you)&lt;/label&gt;
+  &lt;input id="guests" name="guests" type="number" min="1" max="10" value="1"&gt;
+
+  &lt;label for="meal"&gt;Meal preference&lt;/label&gt;
+  &lt;select id="meal" name="meal"&gt;
+    &lt;option value="standard"&gt;Standard&lt;/option&gt;
+    &lt;option value="vegetarian"&gt;Vegetarian&lt;/option&gt;
+    &lt;option value="vegan"&gt;Vegan&lt;/option&gt;
+    &lt;option value="gluten-free"&gt;Gluten-free&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;label for="notes"&gt;Anything we should know? (allergies, accessibility, …)&lt;/label&gt;
+  &lt;textarea id="notes" name="notes" rows="4"&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: send guests to a details page after they RSVP --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/event-details"&gt;
+
+  &lt;button type="submit"&gt;Send RSVP&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration. The form works with or without JavaScript,
+  on any host that can serve an HTML page. Style the fields however you like
+  — only the <code>action</code>, <code>method="post"</code>, and the input
+  <code>name</code> attributes matter to Form2Email.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each RSVP becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the guest's <code>email</code>, so hitting
+    reply reaches them directly if plans change.</li>
+  <li><code>name</code> appears in the body.</li>
+  <li><code>attending</code>, <code>guests</code>, <code>meal</code>, and
+    <code>notes</code> are listed as additional fields.</li>
+</ul>
+<p>With <code>_redirect</code> set, the guest's browser is sent to your page
+  after a successful submit. Without it they get a small JSON response —
+  fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Ask for dietary needs and accessibility requirements in the
+    <code>notes</code> field rather than adding more inputs — one free-text
+    box covers requests you didn't anticipate.</li>
+  <li>One email per RSVP makes headcounts easy: count the "yes" replies in
+    your inbox, or filter on <code>attending: yes</code> with your mail
+    client's search.</li>
+  <li>Point <code>_redirect</code> at a details page with the venue address,
+    start time, and parking info — guests confirm their RSVP worked and get
+    the practical details in one step.</li>
+  <li>Say on the page that no confirmation email is sent; guests only hear
+    from you if you reply.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and RSVP emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>Timing matters: the endpoint expires
+    {{ settings.default_ttl_days }} days after verification. If your event is
+    further out than that, extend it from your manage page so it's still
+    alive on the event date — extensions are free, unlimited, and revive an
+    expired endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your event page answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>Guests get no automatic confirmation email — Form2Email only emails
+    you. Put the key details on the page itself or the
+    <code>_redirect</code> target.</li>
+  <li>No file attachments — file inputs are dropped. Ask for a link
+    instead.</li>
+  <li>Spam protection is origin checks plus per-IP rate limits with
+    backoff; there is no CAPTCHA or honeypot yet.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/booking-form">Booking form</a> — when guests pick a
+    specific date and time rather than just yes or no.</li>
+  <li><a href="/guides/waitlist-form">Waitlist form</a> — for a sold-out
+    event or a coming-soon page, reduced to a single email field.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "guide-base.html" %}
+{% block heading %}Job applications that <span class="highlight">land in your inbox</span>{% endblock %}
+{% block standfirst %}A name / email / résumé-link form on your careers page —
+  every application arrives as an email you can answer by hitting reply.{% endblock %}
+
+{% block about %}
+<p>A small company hiring for one or two roles doesn't need an
+  applicant-tracking system. It needs applications to reach the person doing
+  the hiring — with the candidate's address already set as reply-to, and no
+  spreadsheet or ATS subscription in between.</p>
+<p>Careers pages are usually static, and a static page can't receive the form
+  POST itself. Form2Email receives it and emails you the application. There
+  is no server code to run and no account to create.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;label for="role"&gt;Role&lt;/label&gt;
+  &lt;select id="role" name="role" required&gt;
+    &lt;option value=""&gt;Choose a role…&lt;/option&gt;
+    &lt;option value="product-designer"&gt;Product designer&lt;/option&gt;
+    &lt;option value="backend-engineer"&gt;Backend engineer&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;label for="resume"&gt;Résumé or portfolio link&lt;/label&gt;
+  &lt;input id="resume" name="resume" type="url" placeholder="https://…" required&gt;
+
+  &lt;label for="message"&gt;Cover note&lt;/label&gt;
+  &lt;textarea id="message" name="message" rows="6" required&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Apply&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>Style the fields to match your careers page — only the <code>action</code>,
+  <code>method="post"</code>, and the input <code>name</code> attributes
+  matter to Form2Email. Note that the résumé field is a URL input, not a file
+  input; see Limitations for why.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each application becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the candidate's <code>email</code>, so
+    hitting reply reaches them directly.</li>
+  <li><code>name</code> and the <code>message</code> cover note appear in the
+    body.</li>
+  <li><code>role</code> and the <code>resume</code> link are listed as
+    additional fields, along with anything else you add.</li>
+</ul>
+<p>With <code>_redirect</code> set, the candidate's browser is sent to your
+  thank-you page after a successful submit. Without it they get a small JSON
+  response — fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Hiring for one role? Drop the select and name the role in the page
+    copy. For several openings, keep the select — or run one form per role so
+    applications arrive pre-sorted.</li>
+  <li>Add screening questions as extra fields — "earliest start date",
+    "authorised to work where the role is based?", salary expectations. You
+    get up to 20 extra fields of 1,000 characters each, and they all land in
+    the same email.</li>
+  <li>Reply-to is the candidate's address, so answering an application is
+    just hitting reply — no copy-pasting addresses into your mail client.</li>
+  <li>Use the <code>_redirect</code> field so applicants land on a real
+    thank-you page and know the application went through.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>File uploads don't work: an <code>input type="file"</code> is silently
+    discarded. That's why the example asks for a résumé <em>link</em> — have
+    candidates point to LinkedIn, GitHub, a personal site, or a shared
+    folder.</li>
+  <li>A careers page is easy to forget once the role is filled, so remember
+    the endpoint expires {{ settings.default_ttl_days }} days after
+    verification — extend it for free from your manage page (extending also
+    revives an expired endpoint), or ask the operator for a permanent
+    endpoint.</li>
+  <li>Submissions are accepted only from the exact hostname you registered.
+    If the careers page lives on <code>careers.yoursite.com</code>, register
+    that subdomain, not <code>yoursite.com</code>.</li>
+  <li>The cover note tops out at 20,000 characters and each extra field at
+    1,000 — plenty for a note, but ask for the CV as a link rather than
+    pasted text.</li>
+  <li>Spam protection is origin checks plus per-IP rate limits with backoff;
+    there is no CAPTCHA or honeypot yet.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/support-request-form">Support request form</a> — the
+    same pattern tuned for customer issues with categories and order
+    numbers.</li>
+  <li><a href="/guides/contact-form">Contact form</a> — the three-field
+    version for general enquiries.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

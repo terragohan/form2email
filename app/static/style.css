@@ -442,6 +442,26 @@ pre.prompt-block {
   overflow-x: auto;
 }
 
+/* Links inside page content */
+
+main a:not(.button):not(.logo) {
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+/* Breadcrumb (guides) */
+
+.breadcrumb {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.breadcrumb a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* Lifecycle steps (how-it-works) */
 
 .steps {

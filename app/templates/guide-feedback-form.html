@@ -1,0 +1,109 @@
+{% extends "guide-base.html" %}
+{% block heading %}A feedback form that <span class="highlight">emails you</span>{% endblock %}
+{% block standfirst %}A quick 1–5 rating plus a comment box, linked from your
+  thank-you page or post-purchase email — every response delivered to your
+  inbox.{% endblock %}
+
+{% block about %}
+<p>Right after a purchase or a delivered order is when customers are most
+  willing to tell you how it went. A small feedback form — one rating, one
+  comment box — catches that moment, and the responses pile up somewhere you
+  actually read: your inbox.</p>
+<p>If your store or thank-you page is static HTML, it can't receive the form
+  POST itself. Form2Email receives it and emails you the rating and comment.
+  There is no server code to write and no account to create.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;fieldset&gt;
+    &lt;legend&gt;How would you rate your experience?&lt;/legend&gt;
+    &lt;label&gt;&lt;input type="radio" name="rating" value="1" required&gt; 1 — Poor&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="rating" value="2"&gt; 2&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="rating" value="3"&gt; 3&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="rating" value="4"&gt; 4&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="rating" value="5"&gt; 5 — Excellent&lt;/label&gt;
+  &lt;/fieldset&gt;
+
+  &lt;label for="message"&gt;Comments&lt;/label&gt;
+  &lt;textarea id="message" name="message" rows="5"&gt;&lt;/textarea&gt;
+
+  &lt;label for="name"&gt;Name (optional)&lt;/label&gt;
+  &lt;input id="name" name="name"&gt;
+
+  &lt;label for="email"&gt;Email (optional — only if you'd like a reply)&lt;/label&gt;
+  &lt;input id="email" name="email" type="email"&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Send feedback&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration. The form works with or without JavaScript —
+  swap the radio buttons for a star widget if you like, as long as the chosen
+  value is submitted as <code>rating</code>. Only the <code>action</code>,
+  <code>method="post"</code>, and the input <code>name</code> attributes
+  matter to Form2Email.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each submission becomes one email to your destination address:</p>
+<ul>
+  <li><code>message</code> (the comments) appears in the body, along with
+    <code>name</code> when the visitor gives one.</li>
+  <li><strong>Reply-To</strong> is the visitor's <code>email</code> — but only
+    when they fill it in, so you can answer the people who asked for a
+    reply.</li>
+  <li><code>rating</code> arrives listed as an additional field, like any
+    other extra field you add (an order number, a product name, anything).</li>
+</ul>
+<p>With <code>_redirect</code> set, the visitor's browser is sent to your
+  thank-you page after a successful submit. Without it they get a small JSON
+  response — fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Ask for the rating first. It's one click, so nearly everyone answers it
+    — lead with the comment box and response rates drop.</li>
+  <li>Keep optional fields optional. A feedback form that demands a name and
+    email gets abandoned; mark them optional and say why email is there.</li>
+  <li>Reply-To works when the visitor gives an email — label it "only if
+    you'd like a reply" so people understand the trade.</li>
+  <li>Make the button say what happens: "Send feedback", not "Submit".</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and submission emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>A feedback form is always-on, so remember the endpoint expires
+    {{ settings.default_ttl_days }} days after verification — extend it for
+    free from your manage page (extending also revives an expired endpoint),
+    or ask the operator for a permanent endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your site answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>Visitors get no confirmation email — Form2Email only ever emails you.
+    Say your thanks on the <code>_redirect</code> page instead.</li>
+  <li><code>rating</code> counts toward the extra-field limits: up to 20
+    additional fields of 1,000 characters each, comments up to 20,000
+    characters.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/contact-form">Contact form</a> — the same pattern for
+    general enquiries, with email required.</li>
+  <li><a href="/guides/support-request-form">Support request form</a> —
+    when feedback turns into tickets with order numbers and categories.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}
