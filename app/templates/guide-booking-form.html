@@ -1,0 +1,118 @@
+{% extends "guide-base.html" %}
+{% block heading %}Appointment requests that <span class="highlight">arrive by email</span>{% endblock %}
+{% block standfirst %}Let visitors ask for a service, a date, and a time without
+  phone tag — the request lands in your inbox and you confirm it with a reply.{% endblock %}
+
+{% block about %}
+<p>If you run a salon, a coaching practice, a photography studio, or a small
+  clinic, most bookings start the same way: someone picks a service and a time
+  that suits them, and you say yes or suggest another slot. A form handles that
+  first step better than a phone number or a bare email address on the page —
+  the visitor writes it when it suits them, and every request arrives in the
+  same shape.</p>
+<p>One honest note up front: this is a booking <em>request</em> form, not a
+  scheduler. Form2Email delivers the request to your inbox; checking your
+  calendar and confirming the appointment is your job, done by hitting
+  reply.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;label for="service"&gt;Service&lt;/label&gt;
+  &lt;select id="service" name="service" required&gt;
+    &lt;option value="" disabled selected&gt;Choose a service&lt;/option&gt;
+    &lt;option&gt;Cut and blow-dry&lt;/option&gt;
+    &lt;option&gt;Colour&lt;/option&gt;
+    &lt;option&gt;Consultation (15 min)&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;label for="date"&gt;Preferred date&lt;/label&gt;
+  &lt;input id="date" name="date" type="date" required&gt;
+
+  &lt;label for="time"&gt;Preferred time&lt;/label&gt;
+  &lt;input id="time" name="time" type="time" required&gt;
+
+  &lt;label for="notes"&gt;Notes — alternative times, anything I should know&lt;/label&gt;
+  &lt;textarea id="notes" name="notes" rows="4"&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Request appointment&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>Swap the options for your actual services and style the fields however you
+  like — only the <code>action</code>, <code>method="post"</code>, and the
+  input <code>name</code> attributes matter to Form2Email. The form works with
+  or without JavaScript, on any host that can serve an HTML page.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each request becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the visitor's <code>email</code>, so
+    confirming — or suggesting another slot — is one reply away.</li>
+  <li><code>name</code> appears in the body.</li>
+  <li><code>service</code>, <code>date</code>, <code>time</code>, and
+    <code>notes</code> are listed as additional fields. The date and time
+    inputs arrive as plain text like <code>2026-10-24</code> and
+    <code>14:30</code>, exactly as the browser sent them.</li>
+</ul>
+<p>With <code>_redirect</code> set, the visitor's browser is sent to your
+  thank-you page after a successful submit — a good place to say "I'll confirm
+  by email within a day". Without it they get a small JSON response, which is
+  fine for JavaScript-driven forms but less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Use a <code>&lt;select&gt;</code> for the service. A dropdown of your
+    real services keeps replies short and consistent, and spares visitors a
+    free-text "what do you want?" field.</li>
+  <li>Ask for one preferred date and time, plus an alternative in the notes.
+    Most requests then resolve in a single reply either way.</li>
+  <li>Confirm fast. The visitor's address is already the Reply-To, and a
+    same-day answer is usually what turns a request into a booking.</li>
+  <li>State your opening hours or typical availability in plain text next to
+    the form — it heads off most requests for slots you can't take.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and request emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>This is a booking request, not a scheduler: no calendar sync, no
+    availability checking. The date and time arrive as plain text, and
+    checking them against your actual calendar is up to you.</li>
+  <li>The visitor gets no automatic confirmation email — Form2Email only ever
+    emails you, the owner. The appointment is confirmed when you reply.</li>
+  <li>The endpoint expires {{ settings.default_ttl_days }} days after
+    verification. Extend it for free from your manage page — extending also
+    revives an expired endpoint — or ask the operator for a permanent
+    endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your site answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/quote-request-form">Quote request form</a> — when the
+    first step is scope and budget rather than a time slot.</li>
+  <li><a href="/guides/rsvp-form">RSVP form</a> — collecting yes/no answers
+    for an event instead of appointments.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

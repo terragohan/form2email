@@ -1,11 +1,17 @@
 # Form2Email
 
-Waitlist signup collection, delivered to your inbox — a form-to-email relay
-with expiring endpoints, like a temporary URL service for forms. Register a
-destination email **and the domain your form lives on**, verify the email,
-and get a public URL you can point any HTML form at. Every signup lands in
-your inbox as an email (with all fields), and entries are stored per
-endpoint. Management stays with you, in your inbox.
+Any HTML form, delivered to your inbox — a form-to-email relay with expiring
+endpoints, like a temporary URL service for forms. Register a destination
+email **and the domain your form lives on**, verify the email, and get a
+public URL you can point any HTML form at. Every signup lands in your inbox
+as an email (with all fields), and entries are stored per endpoint.
+Management stays with you, in your inbox.
+
+Typical uses: waitlist signups, contact forms, quote requests, RSVPs,
+feedback boxes — any static site that can't receive a form POST itself. The
+hosted service is at **https://form2email.terragohan.com**, with copy-paste
+guides for those forms at
+[form2email.terragohan.com/guides](https://form2email.terragohan.com/guides).
 
 - **Temporary by default:** endpoints expire 7 days after verification.
   Free extensions add another 7 days each.
@@ -156,7 +162,7 @@ UPDATE endpoints SET is_permanent = 1, permanent_at = <now> WHERE id = '<endpoin
 ## Development
 
 ```bash
-uv run pytest        # 33 tests: endpoints, forms, expiry, rate limits, origin checks
+uv run pytest        # 116 tests: endpoints, forms, expiry, rate limits, origin checks, SEO metadata
 uv run alembic revision --autogenerate -m "..."   # after model changes
 ```
 

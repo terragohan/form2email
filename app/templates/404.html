@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Page not found — Form2Email{% endblock %}
+{% block robots_meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1><span class="highlight">404</span> — page not found</h1>
+  <svg class="squiggle" viewBox="0 0 220 14" width="220" height="14" aria-hidden="true">
+    <path d="M3 9 Q 18 2, 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8"
+      fill="none" stroke="#1c2430" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p>That URL doesn't exist — but your form's inbox is one minute away.</p>
+</div>
+
+<div class="card">
+  <p><a class="button secondary" href="/">Create a form endpoint</a></p>
+  <p>Or read <a href="/how-it-works">how Form2Email works</a> and the
+    <a href="/guides">form guides</a>.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "guide-base.html" %}
+{% block heading %}A quote request form that <span class="highlight">emails you</span>{% endblock %}
+{% block standfirst %}Let clients describe the job, the budget, and the
+  timeline up front — every request lands in your inbox, ready to reply to.{% endblock %}
+
+{% block about %}
+<p>If you sell services — contracting, consulting, freelance work, an agency —
+  the first exchange with a new client is always the same questions: what do
+  you need, what can you spend, and when. A quote request form asks those
+  questions once, so you can size up the lead before you spend time pricing
+  the work.</p>
+<p>A plain HTML form on your existing site is enough. Form2Email receives the
+  submission and emails it to you with the requester's address as reply-to —
+  no backend, no account, no CRM to wire up.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input id="name" name="name" required&gt;
+
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;label for="phone"&gt;Phone (optional)&lt;/label&gt;
+  &lt;input id="phone" name="phone" type="tel"&gt;
+
+  &lt;label for="service"&gt;What do you need?&lt;/label&gt;
+  &lt;select id="service" name="service" required&gt;
+    &lt;option value=""&gt;Choose one&hellip;&lt;/option&gt;
+    &lt;option&gt;Design&lt;/option&gt;
+    &lt;option&gt;Development&lt;/option&gt;
+    &lt;option&gt;Consulting&lt;/option&gt;
+    &lt;option&gt;Something else&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;fieldset&gt;
+    &lt;legend&gt;Budget range&lt;/legend&gt;
+    &lt;label&gt;&lt;input type="radio" name="budget" value="under-1000" required&gt; Under $1,000&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="budget" value="1000-5000"&gt; $1,000&ndash;$5,000&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="budget" value="over-5000"&gt; Over $5,000&lt;/label&gt;
+    &lt;label&gt;&lt;input type="radio" name="budget" value="not-sure"&gt; Not sure yet&lt;/label&gt;
+  &lt;/fieldset&gt;
+
+  &lt;label for="timeline"&gt;When do you want it done?&lt;/label&gt;
+  &lt;input id="timeline" name="timeline" placeholder="e.g. within 3 months"&gt;
+
+  &lt;label for="message"&gt;Tell me about the project&lt;/label&gt;
+  &lt;textarea id="message" name="message" rows="6" required&gt;&lt;/textarea&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Request a quote&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>Swap the service and budget options for your own — the markup is plain
+  HTML and styling is up to you. Only the <code>action</code>,
+  <code>method="post"</code>, and the <code>name</code> attributes matter to
+  Form2Email; selects and radio groups are submitted as ordinary fields like
+  any text input.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each quote request becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the requester's <code>email</code>, so
+    hitting reply answers them directly with your quote.</li>
+  <li><code>name</code> and <code>message</code> appear in the body.</li>
+  <li><code>phone</code>, <code>service</code>, <code>budget</code>, and
+    <code>timeline</code> are listed as additional fields — a select or radio
+    choice arrives as its plain text value.</li>
+</ul>
+<p>With <code>_redirect</code> set, the requester's browser is sent to your
+  thank-you page after a successful submit. Without it they get a small JSON
+  response — fine for JavaScript-driven forms, less friendly for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Ask about budget and timeline in the form itself — that's what
+    qualifies the lead before you spend an hour on a call or a quote.</li>
+  <li>Keep required fields minimal. Name, email, and the project description
+    are enough; leave phone and timeline optional so people don't bounce.</li>
+  <li>Offer a "not sure yet" option on budget — people who skip the question
+    still send the form.</li>
+  <li>Say on your thank-you page when you respond (e.g. "within one business
+    day") — the requester gets no automatic confirmation email.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and submission emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>Selects and radio groups aren't special to Form2Email — they arrive as
+    additional fields with the chosen value as plain text. There is no
+    formatted quote document, just one email per request.</li>
+  <li>Longer forms are fine within the caps: the <code>message</code> field
+    accepts up to 20,000 characters, and you can have up to 20 additional
+    fields of 1,000 characters each.</li>
+  <li>Quote forms tend to run for months, so remember the endpoint expires
+    {{ settings.default_ttl_days }} days after verification — extend it for
+    free from your manage page (extending also revives an expired endpoint),
+    or ask the operator for a permanent endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered.
+    If your site answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>No file attachments — if you want reference photos or briefs, ask for
+    a link instead.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/booking-form">Booking form</a> — when the next step is
+    a fixed appointment rather than a priced quote.</li>
+  <li><a href="/guides/contact-form">Contact form</a> — the minimal
+    three-field version for general enquiries.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

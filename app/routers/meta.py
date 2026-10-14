@@ -34,7 +34,9 @@ def llms_txt(settings: Settings = Depends(get_settings)) -> str:
 
 @router.get("/for-coding-tools", response_class=HTMLResponse)
 def for_coding_tools(settings: Settings = Depends(get_settings)) -> str:
-    return render("for-coding-tools.html", settings=settings)
+    return render(
+        "for-coding-tools.html", settings=settings, canonical_path="/for-coding-tools"
+    )
 
 
 @router.get("/api/info")

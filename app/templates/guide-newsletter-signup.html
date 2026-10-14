@@ -1,0 +1,97 @@
+{% extends "guide-base.html" %}
+{% block heading %}A newsletter signup that <span class="highlight">emails you each subscriber</span>{% endblock %}
+{% block standfirst %}The one-field subscribe box in your blog's footer, sidebar,
+  or at the end of every post — each new subscriber arrives in your inbox.{% endblock %}
+
+{% block about %}
+<p>Readers who finish a post are the ones most likely to want the next one. A
+  small subscribe box right where the content ends — or always present in the
+  footer or sidebar — catches them at that moment, and one email field is all
+  it takes.</p>
+<p>If your blog is static — plain HTML on any host — it can't receive the form
+  POST itself. Form2Email receives it and emails you the address, and you add
+  it to whatever tool actually sends your newsletter.</p>
+{% endblock %}
+
+{% block example %}
+&lt;form action="{{ settings.base_url.rstrip('/') }}/f/your-token" method="post"&gt;
+  &lt;label for="email"&gt;Get new posts by email&lt;/label&gt;
+  &lt;input id="email" name="email" type="email" required&gt;
+
+  &lt;!-- optional: your own thank-you page after submit --&gt;
+  &lt;input type="hidden" name="_redirect" value="https://yoursite.com/thanks"&gt;
+
+  &lt;button type="submit"&gt;Subscribe&lt;/button&gt;
+&lt;/form&gt;
+{% endblock %}
+
+{% block example_notes %}
+<p>That's the whole integration — small enough to sit in a sidebar or footer
+  partial. Only the <code>action</code>, <code>method="post"</code>, and the
+  input <code>name</code> attributes matter to Form2Email; style it to match
+  your site.</p>
+{% endblock %}
+
+{% block mapping %}
+<p>Each submission becomes one email to your destination address:</p>
+<ul>
+  <li><strong>Reply-To</strong> is the subscriber's <code>email</code>, so you
+    can reply to them directly.</li>
+  <li>The address also appears in the body, ready to copy into your newsletter
+    tool.</li>
+  <li>Any other fields you add (a first name, a topic checkbox, anything) are
+    listed as additional fields.</li>
+</ul>
+<p>With <code>_redirect</code> set, the subscriber's browser is sent to your
+  thank-you page after a successful submit — a 303 redirect. Without it they
+  get a small JSON response — fine for JavaScript-driven forms, less friendly
+  for plain HTML.</p>
+{% endblock %}
+
+{% block tips %}
+<ul>
+  <li>Keep it to one field. Email only — every extra field costs you
+    subscribers, and you can ask for a name later.</li>
+  <li>Put the box where readers finish content: the end of each post, the
+    footer, or the sidebar — not a popup the moment they arrive.</li>
+  <li>Make the button say what happens: "Subscribe" or "Get new posts by
+    email", not "Submit".</li>
+  <li>Use <code>_redirect</code> to send subscribers to a thank-you page that
+    tells them what to expect and how often you write.</li>
+  <li>Add <code>{{ settings.mail_from }}</code> to your contacts so the
+    verification and signup emails don't land in spam.</li>
+</ul>
+{% endblock %}
+
+{% block limitations %}
+<ul>
+  <li>Form2Email is not a newsletter service: no double opt-in, no list
+    management, no sending campaigns. You get one email per signup and add the
+    address to your newsletter tool yourself — check that tool's consent
+    requirements before importing.</li>
+  <li>Subscribers get no confirmation email — Form2Email only ever emails you,
+    the endpoint owner. Your thank-you page is where you set expectations.</li>
+  <li>The endpoint expires {{ settings.default_ttl_days }} days after
+    verification — extend it for free from your manage page as often as you
+    like (extending also revives an expired endpoint), or ask the operator for
+    a permanent endpoint.</li>
+  <li>Submissions are accepted only from the exact domain you registered. If
+    your blog answers on both <code>yoursite.com</code> and
+    <code>www.yoursite.com</code>, register the one your form is served
+    from (or create one endpoint per hostname).</li>
+  <li>Spam protection is origin checks plus per-IP rate limits (30 submissions
+    a minute, with exponential backoff) — there is no CAPTCHA or honeypot, so
+    skim the addresses before you import them.</li>
+</ul>
+{% endblock %}
+
+{% block related %}
+<ul>
+  <li><a href="/guides/waitlist-form">Waitlist form</a> — the same single email
+    field, for a coming-soon or pre-launch page.</li>
+  <li><a href="/guides/feedback-form">Feedback form</a> — when you want ratings
+    and comments, not just an address.</li>
+  <li><a href="/how-it-works">How it works</a> — the endpoint lifecycle and
+    security model in detail.</li>
+</ul>
+{% endblock %}

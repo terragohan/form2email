@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}How it works — Form2Email{% endblock %}
+{% block meta_description %}How Form2Email works: create an endpoint, verify your email, and receive HTML form submissions in your inbox. Endpoint lifecycle, security model, and error semantics.{% endblock %}
 {% block main_class %} container-wide{% endblock %}
 {% block content %}
 <div class="hero">
@@ -81,7 +82,7 @@
 <div class="card">
   <h2>Getting our emails</h2>
   <p>Verification and submission emails come from
-    <strong>{{ mail_from }}</strong>. Add that address to your contacts or
+    <strong>{{ settings.mail_from }}</strong>. Add that address to your contacts or
     trusted-senders list so it doesn't get filtered into spam.</p>
 </div>
 
