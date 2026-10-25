@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./form2email.db"
     mail_from: str = "form2email@terragohan.com"
     base_url: str = "http://localhost:8000"
+    # Google tag (GA4) measurement ID, injected into <head> on every page.
+    # Empty disables the tag.
+    google_tag_id: str = ""
     default_ttl_days: int = 7
     verification_token_ttl_hours: int = 24
     rate_limit_create_per_hour: int = 5

@@ -88,7 +88,11 @@ async def form_page(
 ) -> HTMLResponse:
     endpoint = await _get_active_endpoint(store, public_token)
     response = HTMLResponse(
-        render("form.html", action_url=f"{settings.base_url}/f/{public_token}")
+        render(
+            "form.html",
+            settings=settings,
+            action_url=f"{settings.base_url}/f/{public_token}",
+        )
     )
     _apply_cors(request, endpoint, response)
     return response

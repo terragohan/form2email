@@ -30,6 +30,7 @@ async def verify_email(
     await svc.mark_verified(store, settings, endpoint)
     return render(
         "verified.html",
+        settings=settings,
         expires_at=endpoint.expires_at,
         is_permanent=endpoint.is_permanent,
     )

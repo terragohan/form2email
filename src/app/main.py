@@ -147,7 +147,9 @@ _JSON_404_PREFIXES = ("/api/", "/f/", "/manage/", "/verify/", "/healthz")
 async def not_found_handler(request: Request, exc: HTTPException) -> Response:
     if request.url.path.startswith(_JSON_404_PREFIXES):
         return JSONResponse({"detail": exc.detail}, status_code=404)
-    return HTMLResponse(render("404.html"), status_code=404)
+    return HTMLResponse(
+        render("404.html", settings=get_settings(request)), status_code=404
+    )
 
 
 @app.get("/healthz")

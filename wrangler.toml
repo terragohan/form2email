@@ -18,6 +18,7 @@ routes = [
 [vars]
 BASE_URL = "https://form2email.terragohan.com"
 MAIL_FROM = "form2email@terragohan.com"
+GOOGLE_TAG_ID = "G-E693TN1RMF"
 
 [[d1_databases]]
 binding = "DB"
