@@ -36,12 +36,13 @@ Requires `uv` 0.13.4 or newer for Pywrangler. Both database access and outbound
 mail require Cloudflare bindings; there is no alternate runtime provider.
 
 ```bash
-uv run pywrangler d1 migrations apply form_to_email --local
-uv run pywrangler dev
+uv run pywrangler d1 migrations apply form_to_email --local --config ../infra/form2email/wrangler.jsonc
+uv run pywrangler dev --config ../infra/form2email/wrangler.jsonc --port 8000
 ```
 
-The sender domain must be onboarded to Cloudflare Email Sending before real
-mail can be delivered.
+The wrangler config and D1 migrations live in the sibling `../infra/form2email`
+checkout — keep the two checkouts side by side. The sender domain must be
+onboarded to Cloudflare Email Sending before real mail can be delivered.
 
 ## Walkthrough
 
@@ -126,23 +127,28 @@ fetching it at runtime.
 
 ## Deployment
 
-Deployment is Wrangler-only and lives in this repository: `src/worker.py` is
-the ASGI entrypoint, `wrangler.toml` configures the route and bindings, and
-`migrations/` contains the D1 schema. The existing `form_to_email` database is
+Deployment is Wrangler-only and lives in the sibling `../infra/form2email`
+checkout: `wrangler.jsonc` configures the route and bindings, `migrations/`
+contains the D1 schema, and `deploy.sh` wraps the rollout. `src/worker.py`
+here is the ASGI entrypoint. The existing `form_to_email` database is
 reused without a data migration.
 
 Before the first deploy, onboard `terragohan.com` in the Cloudflare dashboard
-under **Compute → Email Service → Email Sending**. Then:
+under **Compute → Email Service → Email Sending**. Then, with an operator
+wrangler login:
 
 ```bash
-uv run pywrangler d1 migrations apply form_to_email --remote
-uv run pywrangler secret put ADMIN_TOKEN
-uv run pywrangler deploy
+../infra/form2email/deploy.sh
 ```
 
-`BASE_URL` and `MAIL_FROM` are non-secret vars in `wrangler.toml`. D1 and Email
-Sending use bindings, so the Worker needs no Cloudflare API token or mail
-provider key at runtime. Logs are available with `uv run pywrangler tail`.
+(one-time secret setup: `uv run pywrangler secret put ADMIN_TOKEN --config
+../infra/form2email/wrangler.jsonc`.)
+
+`BASE_URL`, `MAIL_FROM`, and `GOOGLE_TAG_ID` are non-secret vars in
+`wrangler.jsonc`. D1 and Email Sending use bindings, so the Worker needs no
+Cloudflare API token or mail provider key at runtime. Logs are available
+with `uv run pywrangler tail --config ../infra/form2email/wrangler.jsonc`.
+See `../infra/form2email/README.md` for the full command reference.
 
 ### Granting permanence (operator-only)
 
@@ -165,7 +171,7 @@ UPDATE endpoints SET is_permanent = 1, permanent_at = <now> WHERE id = '<endpoin
 
 ```bash
 uv run pytest        # endpoints, forms, D1/email bindings, expiry, rate limits, CORS, SEO
-uv run pywrangler deploy --dry-run   # verify the Worker bundle
+uv run pywrangler deploy --dry-run --config ../infra/form2email/wrangler.jsonc   # verify the Worker bundle
 uv run alembic revision --autogenerate -m "..."   # after model changes
 ```
 
