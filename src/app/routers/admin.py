@@ -11,7 +11,7 @@ from app.store.base import EndpointRow, Store
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
-def require_admin(
+async def require_admin(
     settings: Settings = Depends(get_settings),
     x_admin_token: str | None = Header(default=None),
 ) -> None:
@@ -25,10 +25,10 @@ def require_admin(
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-def get_endpoint_by_id(
+async def get_endpoint_by_id(
     endpoint_id: str, store: Store = Depends(get_store)
 ) -> EndpointRow:
-    endpoint = store.get_endpoint_by_id(endpoint_id)
+    endpoint = await store.get_endpoint_by_id(endpoint_id)
     if endpoint is None:
         raise HTTPException(status_code=404, detail="Endpoint not found")
     return endpoint
@@ -39,11 +39,11 @@ def get_endpoint_by_id(
     response_model=EndpointStatus,
     dependencies=[Depends(require_admin)],
 )
-def make_endpoint_permanent(
+async def make_endpoint_permanent(
     endpoint: EndpointRow = Depends(get_endpoint_by_id),
     store: Store = Depends(get_store),
 ) -> EndpointStatus:
-    svc.make_permanent(store, endpoint)
+    await svc.make_permanent(store, endpoint)
     return svc.to_status(endpoint)
 
 
@@ -52,11 +52,12 @@ def make_endpoint_permanent(
     response_model=EndpointStatus,
     dependencies=[Depends(require_admin)],
 )
-def revoke_endpoint_permanent(
+async def revoke_endpoint_permanent(
     endpoint: EndpointRow = Depends(get_endpoint_by_id),
     store: Store = Depends(get_store),
+    settings: Settings = Depends(get_settings),
 ) -> EndpointStatus:
     if not endpoint.is_permanent:
         raise HTTPException(status_code=409, detail="Endpoint is not permanent")
-    svc.revoke_permanent(store, endpoint)
+    await svc.revoke_permanent(store, settings, endpoint)
     return svc.to_status(endpoint)

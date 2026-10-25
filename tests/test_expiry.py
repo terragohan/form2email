@@ -1,3 +1,4 @@
+from asyncio import run
 from datetime import timedelta
 
 from app.models import utcnow
@@ -7,14 +8,14 @@ from tests.conftest import create_verified_endpoint
 
 def _endpoint_for(store, payload):
     public_token = payload["public_url"].rsplit("/", 1)[-1]
-    return store.get_by_public_token(hash_token(public_token))
+    return run(store.get_by_public_token(hash_token(public_token)))
 
 
 def test_expired_endpoint_rejects_submissions(client, fake_mailer, store):
     payload = create_verified_endpoint(client, fake_mailer)
     endpoint = _endpoint_for(store, payload)
     endpoint.expires_at = utcnow() - timedelta(seconds=1)
-    store.update_endpoint(endpoint)
+    run(store.update_endpoint(endpoint))
 
     response = client.post(
         payload["public_url"], data={"name": "A", "email": "a@b.co", "message": "hi"}
@@ -42,7 +43,7 @@ def test_extend_revives_expired_endpoint(client, fake_mailer, store):
     payload = create_verified_endpoint(client, fake_mailer)
     endpoint = _endpoint_for(store, payload)
     endpoint.expires_at = utcnow() - timedelta(days=1)
-    store.update_endpoint(endpoint)
+    run(store.update_endpoint(endpoint))
 
     response = client.post(f"{payload['manage_url']}/extend")
     assert response.status_code == 200
@@ -67,7 +68,7 @@ def test_permanent_endpoint_never_expires(client, fake_mailer, store):
     endpoint = _endpoint_for(store, payload)
     endpoint.is_permanent = True
     endpoint.expires_at = utcnow() - timedelta(days=30)
-    store.update_endpoint(endpoint)
+    run(store.update_endpoint(endpoint))
 
     response = client.post(
         payload["public_url"], data={"name": "A", "email": "a@b.co", "message": "hi"}

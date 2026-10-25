@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 
+from app.config import get_settings
 from app.db import get_store
 from app.render import render
 from app.services import endpoints as svc
@@ -10,8 +11,12 @@ router = APIRouter(tags=["verify"])
 
 
 @router.get("/verify/{token}", response_class=HTMLResponse)
-def verify_email(token: str, store: Store = Depends(get_store)) -> str:
-    endpoint = svc.find_by_verification_token(store, token)
+async def verify_email(
+    token: str,
+    store: Store = Depends(get_store),
+    settings=Depends(get_settings),
+) -> str:
+    endpoint = await svc.find_by_verification_token(store, token)
     if endpoint is None:
         raise HTTPException(
             status_code=404,
@@ -22,7 +27,7 @@ def verify_email(token: str, store: Store = Depends(get_store)) -> str:
             status_code=410,
             detail="Verification link has expired — request a new one from your manage URL",
         )
-    svc.mark_verified(store, endpoint)
+    await svc.mark_verified(store, settings, endpoint)
     return render(
         "verified.html",
         expires_at=endpoint.expires_at,

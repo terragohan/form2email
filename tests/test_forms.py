@@ -1,3 +1,5 @@
+from asyncio import run
+
 from app.security import hash_token
 from tests.conftest import create_endpoint, create_verified_endpoint
 
@@ -82,10 +84,10 @@ def test_submit_records_failed_forward_and_returns_502(client, fake_mailer, stor
     )
     assert response.status_code == 502
 
-    endpoint = store.get_by_manage_token(
-        hash_token(payload["manage_url"].rsplit("/", 1)[-1])
+    endpoint = run(
+        store.get_by_manage_token(hash_token(payload["manage_url"].rsplit("/", 1)[-1]))
     )
-    submissions = store.list_submissions(endpoint.id)
+    submissions = run(store.list_submissions(endpoint.id))
     assert len(submissions) == 1
     assert submissions[0].forward_status == "failed"
     assert submissions[0].forwarded_at is None
@@ -215,8 +217,8 @@ def test_submit_rejects_too_many_extra_fields(client, fake_mailer):
 
 def _stored_submission(store, payload):
     public_token = payload["public_url"].rsplit("/", 1)[-1]
-    endpoint = store.get_by_public_token(hash_token(public_token))
-    return store.list_submissions(endpoint.id)[0]
+    endpoint = run(store.get_by_public_token(hash_token(public_token)))
+    return run(store.list_submissions(endpoint.id))[0]
 
 
 def test_submit_coerces_scalars_and_drops_nested_json(client, fake_mailer, store):

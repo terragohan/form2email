@@ -34,8 +34,8 @@ Per-guide intents (each guide is one real-world form people build):
   per page (enforced by tests).
 - Absolute canonical URLs built from `BASE_URL` (`settings.base_url`).
 - Open Graph + Twitter card metadata (`summary_large_image`) on all public
-  pages; social card at `app/static/og-image.png` (1200×630, brand style;
-  source: `app/static/og-image.svg`).
+  pages; social card at `src/app/static/og-image.png` (1200×630, brand style;
+  source: `src/app/static/og-image.svg`).
 - JSON-LD: `WebApplication` on the homepage (accurate `offers` price 0, no
   ratings/reviews/Organization — operator info is not publicly established);
   `BreadcrumbList` on every guide.
@@ -60,7 +60,7 @@ Per-guide intents (each guide is one real-world form people build):
 ## Indexable routes
 
 Included in `sitemap.xml` (14 URLs, source of truth: `SITEMAP_PATHS` in
-`app/main.py`):
+`src/app/main.py`):
 
 `/`, `/how-it-works`, `/for-coding-tools`, `/guides`, and the ten
 `/guides/<slug>` pages.
@@ -79,7 +79,7 @@ excluded from the sitemap — it's for agents, not search), `/docs` +
   `canonical_path` to `render()`; absolute URLs are
   `settings.base_url.rstrip('/') + canonical_path`. Token pages pass no
   `canonical_path`, so they emit no canonical/social tags (they're noindex).
-- Guide pages are registered in `GUIDES` in `app/main.py` (slug → template,
+- Guide pages are registered in `GUIDES` in `src/app/main.py` (slug → template,
   title, description, summary) and extend `guide-base.html`; sitemap and hub
   page derive from the same dict. **Add a new guide by adding one GUIDES
   entry + one template — sitemap, hub, and tests pick it up automatically**
@@ -94,7 +94,7 @@ for `/robots.txt`. (The `/api/info` family stays rate-limited.)
 
 ## Crawler policy
 
-`robots.txt` (`app/main.py::robots_txt`):
+`robots.txt` (`src/app/main.py::robots_txt`):
 
 - `User-agent: *` — `Allow: /` with disallows for `/api/`, `/manage/`,
   `/verify/`, `/f/`, `/healthz`.

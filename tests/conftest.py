@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.config import Settings, get_settings
-from app.db import Base, get_store
+from app.db import get_store
+from app.local_db import Base
 from app.mailer import get_mailer
 from app.main import app
 from app.ratelimit import limiter
@@ -19,7 +20,7 @@ class FakeMailer:
         self.sent: list[dict] = []
         self.fail = False
 
-    def send(self, *, to: str, subject: str, html: str, reply_to: str | None = None) -> None:
+    async def send(self, *, to: str, subject: str, html: str, reply_to: str | None = None) -> None:
         if self.fail:
             raise RuntimeError("provider error")
         self.sent.append({"to": to, "subject": subject, "html": html, "reply_to": reply_to})

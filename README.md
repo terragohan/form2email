@@ -26,22 +26,22 @@ guides for those forms at
 
 ## Stack
 
-Python 3.13 · FastAPI · SQLAlchemy 2 + Alembic (SQLite now, Postgres by
-`DATABASE_URL`) · outbound mail via Resend (HTTP) or plain SMTP — any
-provider, or a local Postfix/relay (`MAIL_DRIVER`) · Jinja2 templates · pytest
+Python 3.13 · FastAPI on Cloudflare Python Workers · Cloudflare D1 and Email
+Sending bindings · Jinja2 templates · pytest. SQLite + SQLAlchemy/Alembic are
+test-only utilities, not runtime fallbacks.
 
 ## Quickstart
 
+Requires `uv` 0.13.4 or newer for Pywrangler. Both database access and outbound
+mail require Cloudflare bindings; there is no alternate runtime provider.
+
 ```bash
-uv sync
-cp .env.example .env        # add your RESEND_API_KEY
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+uv run pywrangler d1 migrations apply form_to_email --local
+uv run pywrangler dev
 ```
 
-Without a Resend API key the app boots and the test suite passes, but real
-delivery needs a key. Note: Resend's `onboarding@resend.dev` sender only
-delivers to your own Resend account email until you verify a domain.
+The sender domain must be onboarded to Cloudflare Email Sending before real
+mail can be delivered.
 
 ## Walkthrough
 
@@ -126,21 +126,23 @@ fetching it at runtime.
 
 ## Deployment
 
-All deployment config lives in the sibling repo **`../infra/form2email`**
-(SAM template, Cloudflare Worker + `wrangler.toml`, D1 migrations, Terraform
-for SSM secrets, `deploy.sh`, and the runbooks `DEPLOY-LAMBDA.md` /
-`DEPLOY-DROPLET.md`). This repo keeps only application code — plus
-`Dockerfile.lambda`, which must stay here because SAM requires the
-Dockerfile inside the container build context.
+Deployment is Wrangler-only and lives in this repository: `src/worker.py` is
+the ASGI entrypoint, `wrangler.toml` configures the route and bindings, and
+`migrations/` contains the D1 schema. The existing `form_to_email` database is
+reused without a data migration.
 
-The service runs behind a path prefix — all generated URLs come from
-`BASE_URL`. Two ready-made paths, both fronted by the same Cloudflare Worker
-(apex routing, `ORIGIN_TOKEN` gate enforced by `OriginTokenMiddleware` in
-`app/main.py`; disabled when unset, as in local dev) — switching between
-them is one `ORIGIN_BASE` line in `../infra/form2email/wrangler.toml`:
+Before the first deploy, onboard `terragohan.com` in the Cloudflare dashboard
+under **Compute → Email Service → Email Sending**. Then:
 
-- **Lambda + Cloudflare D1** (primary) — see `../infra/form2email/DEPLOY-LAMBDA.md`
-- **DigitalOcean droplet + SQLite** (fallback) — see `../infra/form2email/DEPLOY-DROPLET.md`
+```bash
+uv run pywrangler d1 migrations apply form_to_email --remote
+uv run pywrangler secret put ADMIN_TOKEN
+uv run pywrangler deploy
+```
+
+`BASE_URL` and `MAIL_FROM` are non-secret vars in `wrangler.toml`. D1 and Email
+Sending use bindings, so the Worker needs no Cloudflare API token or mail
+provider key at runtime. Logs are available with `uv run pywrangler tail`.
 
 ### Granting permanence (operator-only)
 
@@ -162,7 +164,8 @@ UPDATE endpoints SET is_permanent = 1, permanent_at = <now> WHERE id = '<endpoin
 ## Development
 
 ```bash
-uv run pytest        # 116 tests: endpoints, forms, expiry, rate limits, origin checks, SEO metadata
+uv run pytest        # endpoints, forms, D1/email bindings, expiry, rate limits, CORS, SEO
+uv run pywrangler deploy --dry-run   # verify the Worker bundle
 uv run alembic revision --autogenerate -m "..."   # after model changes
 ```
 

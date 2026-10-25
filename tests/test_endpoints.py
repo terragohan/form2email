@@ -113,7 +113,7 @@ def test_resend_verification_rotates_token(client, fake_mailer):
     assert response.status_code == 200
     second_url = fake_mailer.sent[-1]["html"].split('href="')[1].split('"')[0]
     assert second_url != first_url
-    # Resend can't re-include the URLs — raw tokens are unrecoverable server-side.
+    # Resending can't re-include the URLs — raw tokens are unrecoverable server-side.
     assert payload["public_url"] not in fake_mailer.sent[-1]["html"]
 
     # Old token is dead, new token verifies.
@@ -131,9 +131,9 @@ def test_create_rolls_back_when_verification_email_fails(client, fake_mailer, st
     deleted_ids: list[str] = []
     real_delete = store.delete_endpoint
 
-    def spy_delete(endpoint_id: str) -> None:
+    async def spy_delete(endpoint_id: str) -> None:
         deleted_ids.append(endpoint_id)
-        real_delete(endpoint_id)
+        await real_delete(endpoint_id)
 
     store.delete_endpoint = spy_delete
     fake_mailer.fail = True

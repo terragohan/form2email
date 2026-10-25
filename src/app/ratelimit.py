@@ -73,7 +73,9 @@ limiter = RateLimiter()
 
 
 def _client_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+    return request.headers.get("cf-connecting-ip") or (
+        request.client.host if request.client else "unknown"
+    )
 
 
 def limit_creates(
@@ -125,8 +127,8 @@ def limit_meta(
 ) -> None:
     """Cap the discovery/docs routes (/api/info, /llms.txt,
     /for-coding-tools) per client IP. They're static and cheap, but
-    unthrottled they make an easy amplification target for billed
-    Lambda invocations. One shared bucket across all three routes."""
+    unthrottled they make an easy amplification target for Worker
+    invocations. One shared bucket across all three routes."""
     if not limiter.hit(
         f"meta:{_client_ip(request)}", settings.rate_limit_meta_per_minute, 60
     ):

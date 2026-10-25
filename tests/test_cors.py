@@ -1,3 +1,4 @@
+from asyncio import run
 from datetime import timedelta
 
 from app.models import utcnow
@@ -9,9 +10,9 @@ SUBMISSION = {"name": "A", "email": "a@b.co", "message": "hi"}
 
 def _expire(payload, store):
     public_token = payload["public_url"].rsplit("/", 1)[-1]
-    endpoint = store.get_by_public_token(hash_token(public_token))
+    endpoint = run(store.get_by_public_token(hash_token(public_token)))
     endpoint.expires_at = utcnow() - timedelta(seconds=1)
-    store.update_endpoint(endpoint)
+    run(store.update_endpoint(endpoint))
 
 
 def test_preflight_from_registered_origin(client, fake_mailer):

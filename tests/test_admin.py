@@ -1,4 +1,5 @@
 import uuid
+from asyncio import run
 from datetime import timedelta
 
 import pytest
@@ -42,7 +43,7 @@ def admin_client(store, fake_mailer):
 
 def _endpoint_id(store, payload) -> str:
     public_token = payload["public_url"].rsplit("/", 1)[-1]
-    return store.get_by_public_token(hash_token(public_token)).id
+    return run(store.get_by_public_token(hash_token(public_token))).id
 
 
 def _permanent_url(store, payload) -> str:
@@ -73,8 +74,8 @@ def test_admin_rejects_missing_or_wrong_token(admin_client, fake_mailer, store):
 
 def test_make_permanent_sets_flag(admin_client, fake_mailer, store):
     payload = create_verified_endpoint(admin_client, fake_mailer)
-    endpoint = store.get_by_public_token(
-        hash_token(payload["public_url"].rsplit("/", 1)[-1])
+    endpoint = run(
+        store.get_by_public_token(hash_token(payload["public_url"].rsplit("/", 1)[-1]))
     )
 
     response = admin_client.post(
@@ -83,7 +84,7 @@ def test_make_permanent_sets_flag(admin_client, fake_mailer, store):
     assert response.status_code == 200
     assert response.json()["permanent"] is True
 
-    endpoint = store.get_endpoint_by_id(endpoint.id)
+    endpoint = run(store.get_endpoint_by_id(endpoint.id))
     assert endpoint.is_permanent is True
     assert endpoint.permanent_at is not None
 
@@ -97,11 +98,11 @@ def test_make_permanent_sets_flag(admin_client, fake_mailer, store):
 
 def test_make_permanent_revives_expired_endpoint(admin_client, fake_mailer, store):
     payload = create_verified_endpoint(admin_client, fake_mailer)
-    endpoint = store.get_by_public_token(
-        hash_token(payload["public_url"].rsplit("/", 1)[-1])
+    endpoint = run(
+        store.get_by_public_token(hash_token(payload["public_url"].rsplit("/", 1)[-1]))
     )
     endpoint.expires_at = utcnow() - timedelta(days=1)
-    store.update_endpoint(endpoint)
+    run(store.update_endpoint(endpoint))
     assert (
         admin_client.post(
             payload["public_url"], data={"name": "A", "email": "a@b.co", "message": "hi"}
@@ -128,11 +129,11 @@ def test_make_permanent_is_idempotent(admin_client, fake_mailer, store):
     url = _permanent_url(store, payload)
     headers = {"X-Admin-Token": ADMIN_TOKEN}
     assert admin_client.post(url, headers=headers).status_code == 200
-    first = store.get_endpoint_by_id(_endpoint_id(store, payload)).permanent_at
+    first = run(store.get_endpoint_by_id(_endpoint_id(store, payload))).permanent_at
     assert first is not None
 
     assert admin_client.post(url, headers=headers).status_code == 200
-    second = store.get_endpoint_by_id(_endpoint_id(store, payload)).permanent_at
+    second = run(store.get_endpoint_by_id(_endpoint_id(store, payload))).permanent_at
     # A re-grant must not re-stamp permanent_at.
     assert second == first
 
@@ -152,7 +153,7 @@ def test_revoke_permanent_clears_flag_and_resets_expiry(
     assert response.status_code == 200
     assert response.json()["permanent"] is False
 
-    endpoint = store.get_endpoint_by_id(_endpoint_id(store, payload))
+    endpoint = run(store.get_endpoint_by_id(_endpoint_id(store, payload)))
     assert endpoint.is_permanent is False
     assert endpoint.permanent_at is None
     # Revocation restarts the TTL from now so the endpoint doesn't instantly 410.
@@ -166,7 +167,7 @@ def test_revoke_permanent_clears_flag_and_resets_expiry(
 
 def test_revoke_permanent_requires_permanent(admin_client, fake_mailer, store):
     payload = create_verified_endpoint(admin_client, fake_mailer)
-    endpoint = store.get_endpoint_by_id(_endpoint_id(store, payload))
+    endpoint = run(store.get_endpoint_by_id(_endpoint_id(store, payload)))
     expires_before = endpoint.expires_at
 
     response = admin_client.delete(
@@ -175,7 +176,7 @@ def test_revoke_permanent_requires_permanent(admin_client, fake_mailer, store):
     assert response.status_code == 409
 
     # A temporary endpoint's expiry must be left untouched.
-    endpoint = store.get_endpoint_by_id(_endpoint_id(store, payload))
+    endpoint = run(store.get_endpoint_by_id(_endpoint_id(store, payload)))
     assert endpoint.is_permanent is False
     assert endpoint.expires_at == expires_before
 

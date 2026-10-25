@@ -1,16 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db import Base
-
-
-def utcnow() -> datetime:
-    # Naive UTC everywhere so SQLite and Postgres behave identically and all
-    # comparisons stay naive-vs-naive.
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from app.clock import utcnow
+from app.local_db import Base
 
 
 class Endpoint(Base):

@@ -17,16 +17,16 @@ from app.store.base import EndpointRow, Store
 router = APIRouter(prefix="/api/endpoints", tags=["endpoints"])
 
 
-def get_endpoint_by_manage_token(
+async def get_endpoint_by_manage_token(
     manage_token: str, store: Store = Depends(get_store)
 ) -> EndpointRow:
-    endpoint = svc.find_by_manage_token(store, manage_token)
+    endpoint = await svc.find_by_manage_token(store, manage_token)
     if endpoint is None:
         raise HTTPException(status_code=404, detail="Endpoint not found")
     return endpoint
 
 
-def _send_verification_email(
+async def _send_verification_email(
     mailer: Mailer,
     settings: Settings,
     endpoint: EndpointRow,
@@ -46,7 +46,7 @@ def _send_verification_email(
         ttl_days=settings.default_ttl_days,
         mail_from=settings.mail_from,
     )
-    mailer.send(
+    await mailer.send(
         to=endpoint.destination_email,
         subject="Verify your Form2Email endpoint",
         html=html,
@@ -59,21 +59,21 @@ def _send_verification_email(
     status_code=201,
     dependencies=[Depends(limit_creates)],
 )
-def create_endpoint(
+async def create_endpoint(
     body: CreateEndpointRequest,
     store: Store = Depends(get_store),
     settings: Settings = Depends(get_settings),
     mailer: Mailer = Depends(get_mailer),
 ) -> EndpointCreated:
     limit_verification_emails(str(body.destination_email), settings)
-    endpoint, public_token, manage_token, verification_token = svc.create_endpoint(
-        store, str(body.destination_email), body.origin
+    endpoint, public_token, manage_token, verification_token = await svc.create_endpoint(
+        store, settings, str(body.destination_email), body.origin
     )
     public_url = f"{settings.base_url}/f/{public_token}"
     manage_url = f"{settings.base_url}/api/endpoints/{manage_token}"
     manage_page_url = f"{settings.base_url}/manage/{manage_token}"
     try:
-        _send_verification_email(
+        await _send_verification_email(
             mailer,
             settings,
             endpoint,
@@ -84,7 +84,7 @@ def create_endpoint(
     except Exception:
         # Roll the endpoint back rather than leaving an unverifiable orphan
         # the user never hears about (e.g. misconfigured mail provider).
-        store.delete_endpoint(endpoint.id)
+        await store.delete_endpoint(endpoint.id)
         raise HTTPException(
             status_code=502,
             detail="Verification email could not be sent — check email configuration",
@@ -100,14 +100,14 @@ def create_endpoint(
 
 
 @router.get("/{manage_token}", response_model=EndpointStatus)
-def endpoint_status(
+async def endpoint_status(
     endpoint: EndpointRow = Depends(get_endpoint_by_manage_token),
 ) -> EndpointStatus:
     return svc.to_status(endpoint)
 
 
 @router.post("/{manage_token}/verification", response_model=MessageResponse)
-def resend_verification(
+async def resend_verification(
     endpoint: EndpointRow = Depends(get_endpoint_by_manage_token),
     store: Store = Depends(get_store),
     settings: Settings = Depends(get_settings),
@@ -116,15 +116,16 @@ def resend_verification(
     if endpoint.is_verified:
         raise HTTPException(status_code=409, detail="Email already verified")
     limit_verification_emails(endpoint.destination_email, settings)
-    token = svc.rotate_verification_token(store, endpoint)
-    _send_verification_email(mailer, settings, endpoint, token)
+    token = await svc.rotate_verification_token(store, settings, endpoint)
+    await _send_verification_email(mailer, settings, endpoint, token)
     return MessageResponse(detail="Verification email sent")
 
 
 @router.post("/{manage_token}/extend", response_model=EndpointStatus)
-def extend_endpoint(
+async def extend_endpoint(
     endpoint: EndpointRow = Depends(get_endpoint_by_manage_token),
     store: Store = Depends(get_store),
+    settings: Settings = Depends(get_settings),
 ) -> EndpointStatus:
     if not endpoint.is_verified:
         raise HTTPException(status_code=403, detail="Email not verified")
@@ -132,5 +133,5 @@ def extend_endpoint(
         raise HTTPException(
             status_code=409, detail="Endpoint is permanent and does not expire"
         )
-    svc.extend(store, endpoint)
+    await svc.extend(store, settings, endpoint)
     return svc.to_status(endpoint)

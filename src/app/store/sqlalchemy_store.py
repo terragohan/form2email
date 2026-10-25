@@ -52,7 +52,7 @@ class SqlAlchemyStore:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def create_endpoint(
+    async def create_endpoint(
         self,
         *,
         public_token_hash: str,
@@ -77,16 +77,16 @@ class SqlAlchemyStore:
         self._session.refresh(model)
         return _endpoint_to_row(model)
 
-    def get_by_public_token(self, token_hash: str) -> EndpointRow | None:
+    async def get_by_public_token(self, token_hash: str) -> EndpointRow | None:
         return self._get_row(Endpoint.public_token_hash == token_hash)
 
-    def get_by_manage_token(self, token_hash: str) -> EndpointRow | None:
+    async def get_by_manage_token(self, token_hash: str) -> EndpointRow | None:
         return self._get_row(Endpoint.manage_token_hash == token_hash)
 
-    def get_by_verification_token(self, token_hash: str) -> EndpointRow | None:
+    async def get_by_verification_token(self, token_hash: str) -> EndpointRow | None:
         return self._get_row(Endpoint.verification_token_hash == token_hash)
 
-    def get_endpoint_by_id(self, endpoint_id: str) -> EndpointRow | None:
+    async def get_endpoint_by_id(self, endpoint_id: str) -> EndpointRow | None:
         model = self._session.get(Endpoint, endpoint_id)
         return _endpoint_to_row(model) if model else None
 
@@ -94,7 +94,7 @@ class SqlAlchemyStore:
         model = self._session.scalar(select(Endpoint).where(condition))
         return _endpoint_to_row(model) if model else None
 
-    def update_endpoint(self, row: EndpointRow) -> None:
+    async def update_endpoint(self, row: EndpointRow) -> None:
         model = self._session.get(Endpoint, row.id)
         if model is None:
             raise KeyError(f"endpoint {row.id} not found")
@@ -102,13 +102,13 @@ class SqlAlchemyStore:
             setattr(model, field, getattr(row, field))
         self._session.commit()
 
-    def delete_endpoint(self, endpoint_id: str) -> None:
+    async def delete_endpoint(self, endpoint_id: str) -> None:
         model = self._session.get(Endpoint, endpoint_id)
         if model is not None:
             self._session.delete(model)
             self._session.commit()
 
-    def create_submission(
+    async def create_submission(
         self,
         *,
         endpoint_id: str,
@@ -134,11 +134,11 @@ class SqlAlchemyStore:
         self._session.refresh(model)
         return _submission_to_row(model)
 
-    def get_submission(self, submission_id: str) -> SubmissionRow | None:
+    async def get_submission(self, submission_id: str) -> SubmissionRow | None:
         model = self._session.get(Submission, submission_id)
         return _submission_to_row(model) if model else None
 
-    def list_submissions(self, endpoint_id: str) -> list[SubmissionRow]:
+    async def list_submissions(self, endpoint_id: str) -> list[SubmissionRow]:
         models = self._session.scalars(
             select(Submission)
             .where(Submission.endpoint_id == endpoint_id)
@@ -146,7 +146,7 @@ class SqlAlchemyStore:
         ).all()
         return [_submission_to_row(model) for model in models]
 
-    def mark_submission_forwarded(
+    async def mark_submission_forwarded(
         self, submission_id: str, *, status: str, forwarded_at
     ) -> None:
         model = self._session.get(Submission, submission_id)

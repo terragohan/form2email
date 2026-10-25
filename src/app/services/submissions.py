@@ -1,5 +1,5 @@
 from app.mailer import Mailer
-from app.models import utcnow
+from app.clock import utcnow
 from app.render import render
 from app.store.base import EndpointRow, Store, SubmissionRow
 
@@ -45,7 +45,7 @@ def _extra_fields(data: dict) -> dict[str, str]:
     return extra
 
 
-def record_and_forward(
+async def record_and_forward(
     store: Store, mailer: Mailer, endpoint: EndpointRow, data: dict, mail_from: str
 ) -> SubmissionRow:
     """Persist the submission and relay it by email.
@@ -53,7 +53,7 @@ def record_and_forward(
     Raises ValueError on over-length fields. Delivery failures are recorded
     as forward_status="failed" (no retry queue in the MVP — see INIT-005).
     """
-    submission = store.create_submission(
+    submission = await store.create_submission(
         endpoint_id=endpoint.id,
         sender_name=_clean(data.get("name"), MAX_NAME_LENGTH, "name"),
         sender_email=_clean(data.get("email"), MAX_EMAIL_LENGTH, "email"),
@@ -83,7 +83,7 @@ def record_and_forward(
         else None
     )
     try:
-        mailer.send(
+        await mailer.send(
             to=endpoint.destination_email,
             subject=subject,
             html=html,
@@ -91,12 +91,12 @@ def record_and_forward(
         )
         submission.forward_status = "sent"
         submission.forwarded_at = utcnow()
-        store.mark_submission_forwarded(
+        await store.mark_submission_forwarded(
             submission.id, status="sent", forwarded_at=submission.forwarded_at
         )
     except Exception:
         submission.forward_status = "failed"
-        store.mark_submission_forwarded(
+        await store.mark_submission_forwarded(
             submission.id, status="failed", forwarded_at=None
         )
     return submission

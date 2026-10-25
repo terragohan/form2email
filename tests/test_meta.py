@@ -4,14 +4,14 @@ def test_llms_txt(client):
     assert response.headers["content-type"].startswith("text/plain")
     assert "/api/endpoints" in response.text
     assert "http://testserver" in response.text
-    assert "onboarding@resend.dev" in response.text
+    assert "form2email@terragohan.com" in response.text
 
 
 def test_for_coding_tools_page(client):
     response = client.get("/for-coding-tools")
     assert response.status_code == 200
     assert "Set up a Form2Email endpoint" in response.text
-    assert "onboarding@resend.dev" in response.text
+    assert "form2email@terragohan.com" in response.text
     assert "/api/info" in response.text
 
 

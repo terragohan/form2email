@@ -19,7 +19,7 @@ form visitors.
 - Endpoint creation takes destination email + the form's origin domain; both
   stored, linked to a unique public URL + manage URL (hashes only in DB)
 - Email verification (24h, single-use, rotatable) required before activation
-- Public form page + submission relay via Resend; entries stored per endpoint
+- Public form page + submission relay via Cloudflare Email Sending; entries stored per endpoint
 - Origin enforcement on submit: browser Origin/Referer must exactly match the
   stored domain (no implicit subdomains); headerless clients
   (curl/server-to-server) allowed
@@ -29,7 +29,7 @@ form visitors.
   verification emails to any single address capped per day across all IPs
 - Submission size limits: 64 KB body cap (413), per-field length caps (422),
   file uploads and nested JSON dropped
-- Alembic migrations from day one; SQLite by default, Postgres by env var
+- Cloudflare D1 in production; SQLAlchemy/Alembic with SQLite in tests
 
 **Out of scope (decided):** no email to form visitors (no double opt-in), no
 inbound/reply-to-command processing, no owner-side actions in relay emails —
@@ -109,9 +109,9 @@ see it in the dashboard, and revoke/regenerate tokens.
 - Alerting on forward-failure rate
 - Forward-retry queue for failed relays
 - Janitor job purging expired endpoints and old submissions
-- Postgres-by-default deployment guide + Dockerfile
+- Operational deployment and rollback runbook
 
-**Success criteria:** A failed Resend call is visible in metrics and retried
+**Success criteria:** A failed Cloudflare Email Sending call is visible in metrics and retried
 automatically; expired data is purged on schedule; one-command deploy.
 
 **Roadmap phase:** Later.

@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.config import Settings, get_settings
 from app.db import get_store
 from app.mailer import Mailer, get_mailer
-from app.models import utcnow
+from app.clock import utcnow
 from app.ratelimit import limit_submits
 from app.render import render
 from app.schemas import host_from_url, host_matches_origin
@@ -15,8 +15,8 @@ from app.store.base import EndpointRow, Store
 router = APIRouter(prefix="/f", tags=["forms"])
 
 
-def _get_active_endpoint(store: Store, public_token: str) -> EndpointRow:
-    endpoint = svc.find_by_public_token(store, public_token)
+async def _get_active_endpoint(store: Store, public_token: str) -> EndpointRow:
+    endpoint = await svc.find_by_public_token(store, public_token)
     if endpoint is None:
         raise HTTPException(status_code=404, detail="Form not found")
     if not endpoint.is_verified:
@@ -56,12 +56,12 @@ def _apply_cors(request: Request, endpoint: EndpointRow, response: Response) -> 
 
 
 @router.options("/{public_token}")
-def preflight_form(
+async def preflight_form(
     public_token: str,
     request: Request,
     store: Store = Depends(get_store),
 ) -> Response:
-    endpoint = _get_active_endpoint(store, public_token)
+    endpoint = await _get_active_endpoint(store, public_token)
     origin = request.headers.get("origin")
     if not origin or not host_matches_origin(host_from_url(origin), endpoint.origin):
         raise HTTPException(
@@ -80,13 +80,13 @@ def preflight_form(
 
 
 @router.get("/{public_token}", response_class=HTMLResponse)
-def form_page(
+async def form_page(
     public_token: str,
     request: Request,
     store: Store = Depends(get_store),
     settings: Settings = Depends(get_settings),
 ) -> HTMLResponse:
-    endpoint = _get_active_endpoint(store, public_token)
+    endpoint = await _get_active_endpoint(store, public_token)
     response = HTMLResponse(
         render("form.html", action_url=f"{settings.base_url}/f/{public_token}")
     )
@@ -106,7 +106,7 @@ async def submit_form(
     if content_length.isdigit() and int(content_length) > settings.max_submission_body_bytes:
         raise HTTPException(status_code=413, detail="Submission too large")
 
-    endpoint = _get_active_endpoint(store, public_token)
+    endpoint = await _get_active_endpoint(store, public_token)
     if not _origin_allowed(request, endpoint):
         raise HTTPException(
             status_code=403,
@@ -120,7 +120,7 @@ async def submit_form(
     redirect_url = data.pop("_redirect", None)
 
     try:
-        submission = submission_svc.record_and_forward(
+        submission = await submission_svc.record_and_forward(
             store, mailer, endpoint, data, settings.mail_from
         )
     except ValueError as exc:

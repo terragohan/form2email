@@ -24,13 +24,12 @@ Phases for Form2Email. Work is organized into initiatives — see
 - **INIT-004 — Accounts & dashboard** — owner login, multi-endpoint
   management, submission history, claim-by-manage-token migration.
 - **INIT-005 — Observability & ops** — structured logs, metrics, alerting,
-  forward-retry queue, expired-data janitor, Dockerfile + Postgres deployment
-  guide.
+  forward-retry queue, expired-data janitor, operational deployment and
+  rollback runbook.
 
 ## Notes
 
-- Database: SQLite now; Postgres only requires setting `DATABASE_URL` —
-  Alembic migrations already cover the schema. INIT-005 adds the deployment
-  tooling.
-- Email: Resend behind the `Mailer` protocol (`app/mailer/base.py`); an SMTP
-  provider is a drop-in if vendor lock-in becomes a concern.
+- Database: Cloudflare D1 through a mandatory native Worker binding;
+  SQLite through SQLAlchemy/Alembic only in tests.
+- Email: Cloudflare Email Sending behind the `Mailer` protocol
+  (`src/app/mailer/base.py`), using the Worker's `EMAIL` binding.
